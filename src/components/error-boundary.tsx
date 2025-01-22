@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/IconButton";
 
 export default function ErrorBoundary({
   error,
@@ -17,7 +17,7 @@ export default function ErrorBoundary({
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-2">
       <h2 className="text-2xl font-bold">Something went wrong!</h2>
-      <Button onClick={() => reset()}>Try again</Button>
+      <IconButton onClick={() => reset()}>Try again</IconButton>
     </div>
   );
 }
