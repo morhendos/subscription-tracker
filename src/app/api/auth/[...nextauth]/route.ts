@@ -1,72 +1,26 @@
-import { NextAuthOptions } from "next-auth";
-import NextAuth from "next-auth/next";
-import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "@/lib/prisma";
-import { compare } from "bcryptjs";
+import NextAuth from 'next-auth'
+import { NextApiRequest, NextApiResponse } from 'next'
+import { authOptions } from '@/lib/auth/auth-options'
 
-export const authOptions: NextAuthOptions = {
-  session: {
-    strategy: 'jwt'
-  },
-  pages: {
-    signIn: '/auth/login',
-    signUp: '/auth/register',
-    error: '/auth/error'
-  },
-  providers: [
-    CredentialsProvider({
-      name: 'credentials',
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
-        }
+console.log('[NEXTAUTH] Configuration:', {
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  NODE_ENV: process.env.NODE_ENV,
+  HAS_SECRET: !!process.env.NEXTAUTH_SECRET,
+})
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        });
+const handler = NextAuth(authOptions)
 
-        if (!user || !user.hashedPassword) {
-          throw new Error('Invalid credentials');
-        }
-
-        const isValid = await compare(
-          credentials.password,
-          user.hashedPassword
-        );
-
-        if (!isValid) {
-          throw new Error('Invalid credentials');
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        };
-      }
+const wrappedHandler = async (req: Request, res: Response) => {
+  try {
+    console.log('[NEXTAUTH] Handling request:', {
+      method: req.method,
+      url: req.url,
     })
-  ],
-  callbacks: {
-    async session({ token, session }) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.email = token.email;
-      }
-      return session;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    }
+    return await handler(req, res)
+  } catch (error) {
+    console.error('[NEXTAUTH] Error in auth handler:', error)
+    throw error
   }
-};
+}
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+export { wrappedHandler as GET, wrappedHandler as POST }
