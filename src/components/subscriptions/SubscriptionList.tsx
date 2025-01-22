@@ -1,77 +1,97 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { EditSubscriptionDialog } from './EditSubscriptionDialog';
-import { DeleteSubscriptionDialog } from './DeleteSubscriptionDialog';
-import { getSubscriptions } from '@/lib/api';
-import { Subscription } from '@/types/subscription';
+import { Subscription, Currency } from '@/types/subscriptions';
+import { useState } from 'react';
+import { CreditCard, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { formatCurrency } from '@/utils/format';
 
-export function SubscriptionList() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
+interface SubscriptionListProps {
+  subscriptions: Subscription[];
+  onEdit: (subscription: Subscription) => void;
+  onDelete: (id: string) => void;
+}
 
-  useEffect(() => {
-    loadSubscriptions();
-  }, []);
+export function SubscriptionList({ subscriptions, onEdit, onDelete }: SubscriptionListProps) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const loadSubscriptions = async () => {
-    try {
-      const data = await getSubscriptions();
-      setSubscriptions(data);
-    } catch (error) {
-      console.error('Error loading subscriptions:', error);
-    } finally {
-      setLoading(false);
+  const toggleExpand = (id: string) => {
+    setExpandedId(expandedId === id ? null : id);
+  };
+
+  const formatBillingPeriod = (period: string) => {
+    return period.charAt(0).toUpperCase() + period.slice(1);
+  };
+
+  const formatNextBilling = (date: string | undefined) => {
+    if (!date) return 'Not available';
+    return new Date(date).toLocaleDateString();
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this subscription?')) {
+      onDelete(id);
     }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (subscriptions.length === 0) {
-    return (
-      <div className="text-center text-muted-foreground">
-        No subscriptions found. Add your first subscription to get started!
-      </div>
-    );
-  }
-
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-4">
       {subscriptions.map((subscription) => (
-        <Card key={subscription.id} className="p-6 space-y-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-semibold text-lg">{subscription.name}</h3>
-              <p className="text-muted-foreground">
-                {subscription.price} {subscription.currency} / {subscription.billingCycle.toLowerCase()}
-              </p>
+        <div
+          key={subscription.id}
+          className="bg-paper border border-border rounded-lg p-4 space-y-4 transition-all duration-200"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <div className="mt-1">
+                <CreditCard size={18} className="text-accent" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="font-medium journal-text">{subscription.name}</h3>
+                <p className="text-sm text-ink/60">
+                  {formatCurrency(subscription.price, subscription.currency)} / {formatBillingPeriod(subscription.billingPeriod)}
+                </p>
+              </div>
             </div>
-            <div className="space-x-2">
-              <EditSubscriptionDialog
-                subscription={subscription}
-                onSuccess={loadSubscriptions}
-              />
-              <DeleteSubscriptionDialog
-                subscription={subscription}
-                onSuccess={loadSubscriptions}
-              />
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onEdit(subscription)}
+                className="p-2 hover:bg-accent/10 rounded-md transition-colors"
+              >
+                <Edit2 size={16} className="text-accent" strokeWidth={1.5} />
+              </button>
+              <button
+                onClick={() => handleDelete(subscription.id)}
+                className="p-2 hover:bg-red-500/10 rounded-md transition-colors"
+              >
+                <Trash2 size={16} className="text-red-500" strokeWidth={1.5} />
+              </button>
+              <button
+                onClick={() => toggleExpand(subscription.id)}
+                className="p-2 hover:bg-accent/10 rounded-md transition-colors"
+              >
+                <MoreVertical size={16} className="text-accent" strokeWidth={1.5} />
+              </button>
             </div>
           </div>
-          <div className="space-y-2">
-            <p className="text-sm">
-              Next billing: {format(new Date(subscription.nextBilling), 'PPP')}
-            </p>
-            {subscription.description && (
-              <p className="text-sm text-muted-foreground">{subscription.description}</p>
-            )}
-          </div>
-        </Card>
+
+          {expandedId === subscription.id && (
+            <div className="text-sm space-y-2 pt-2 border-t border-border/50">
+              <p><span className="text-ink/60">Started on:</span> {new Date(subscription.startDate).toLocaleDateString()}</p>
+              <p><span className="text-ink/60">Next billing:</span> {formatNextBilling(subscription.nextBillingDate)}</p>
+              {subscription.description && (
+                <p><span className="text-ink/60">Notes:</span> {subscription.description}</p>
+              )}
+            </div>
+          )}
+        </div>
       ))}
+
+      {subscriptions.length === 0 && (
+        <div className="text-center py-8 text-ink/60">
+          <p>No subscriptions added yet</p>
+        </div>
+      )}
     </div>
   );
 }
