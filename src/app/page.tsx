@@ -10,8 +10,8 @@ import { Subscription, SubscriptionFormData } from '@/types/subscriptions';
 import { useSubscriptionStorage } from '@/lib/subscriptions/storage';
 
 export default function SubscriptionsPage() {
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const {
-    subscriptions,
     addSubscription,
     updateSubscription,
     deleteSubscription,
