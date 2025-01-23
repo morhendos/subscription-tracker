@@ -150,7 +150,7 @@ export function SubscriptionForm({
         />
       </div>
 
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end space-x-4 p-1">
         {onCancel && (
           <button
             type="button"
