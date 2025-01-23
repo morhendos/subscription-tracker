@@ -21,6 +21,24 @@ export function formatCurrency(amount: number | null | undefined, currency: Curr
   }).format(value);
 }
 
+export function formatDate(dateStr: string) {
+  try {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return '';
+    
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
+}
+
 export function convertToEur(amount: number, fromCurrency: Currency): number {
   if (fromCurrency === 'EUR') return amount;
   return amount * EXCHANGE_RATES[fromCurrency];
