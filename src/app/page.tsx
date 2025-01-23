@@ -1,10 +1,14 @@
+'use client';
+
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
+import { useSession } from 'next-auth/react';
 
-export default async function Home() {
-  const session = await getServerSession();
+export default function Home() {
+  const { status } = useSession();
 
-  if (!session?.user) {
+  if (status === 'loading') return null;
+  
+  if (status === 'unauthenticated') {
     redirect('/login');
   }
 
