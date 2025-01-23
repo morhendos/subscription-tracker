@@ -1,9 +1,9 @@
 'use client';
 
-import { Subscription, Currency } from '@/types/subscriptions';
-import { useState } from 'react';
-import { CreditCard, MoreVertical, Edit2, Trash2 } from 'lucide-react';
-import { formatCurrency } from '@/utils/format';
+import { useMemo } from 'react';
+import { Subscription } from '@/types/subscriptions';
+import { formatCurrency, formatDate } from '@/utils/format';
+import { Pencil, Trash, CreditCard } from 'lucide-react';
 
 interface SubscriptionListProps {
   subscriptions: Subscription[];
@@ -12,86 +12,75 @@ interface SubscriptionListProps {
 }
 
 export function SubscriptionList({ subscriptions, onEdit, onDelete }: SubscriptionListProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const sortedSubscriptions = useMemo(() => {
+    return [...subscriptions].sort((a, b) => {
+      const nextDateA = new Date(a.nextBillingDate || a.startDate);
+      const nextDateB = new Date(b.nextBillingDate || b.startDate);
+      return nextDateA.getTime() - nextDateB.getTime();
+    });
+  }, [subscriptions]);
 
-  const toggleExpand = (id: string) => {
-    setExpandedId(expandedId === id ? null : id);
-  };
-
-  const formatBillingPeriod = (period: string) => {
-    return period.charAt(0).toUpperCase() + period.slice(1);
-  };
-
-  const formatNextBilling = (date: string | undefined) => {
-    if (!date) return 'Not available';
-    return new Date(date).toLocaleDateString();
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this subscription?')) {
-      onDelete(id);
-    }
-  };
+  if (!subscriptions?.length) {
+    return (
+      <div className="text-center text-muted italic py-8">
+        No subscriptions added yet
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      {subscriptions.map((subscription) => (
+      {sortedSubscriptions.map((subscription) => (
         <div
           key={subscription.id}
-          className="bg-paper border border-border rounded-lg p-4 space-y-4 transition-all duration-200"
+          className="bg-paper p-4 rounded-lg shadow-sm animate-slide-in border border-gray-200 dark:border-gray-700"
         >
-          <div className="flex items-start justify-between">
+          <div className="flex justify-between items-start gap-4">
             <div className="flex items-start gap-3">
-              <div className="mt-1">
-                <CreditCard size={18} className="text-accent" strokeWidth={1.5} />
+              <div className="mt-1 text-accent">
+                <CreditCard size={20} />
               </div>
               <div>
-                <h3 className="font-medium journal-text">{subscription.name}</h3>
-                <p className="text-sm text-ink/60">
-                  {formatCurrency(subscription.price, subscription.currency)} / {formatBillingPeriod(subscription.billingPeriod)}
-                </p>
+                <h3 className="font-semibold text-foreground">
+                  {subscription.name}
+                </h3>
+                
+                <div className="mt-1 text-muted text-sm">
+                  {formatCurrency(subscription.price, subscription.currency)} per {subscription.billingPeriod}
+                </div>
+
+                {subscription.description && (
+                  <div className="mt-2 text-sm text-muted">
+                    {subscription.description}
+                  </div>
+                )}
+
+                <div className="mt-2 text-xs text-muted">
+                  Next billing: {formatDate(subscription.nextBillingDate || subscription.startDate)}
+                </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onEdit(subscription)}
-                className="p-2 hover:bg-accent/10 rounded-md transition-colors"
+                className="p-2 text-muted hover:text-foreground transition-colors"
+                title="Edit subscription"
               >
-                <Edit2 size={16} className="text-accent" strokeWidth={1.5} />
+                <Pencil className="w-4 h-4" />
               </button>
+
               <button
-                onClick={() => handleDelete(subscription.id)}
-                className="p-2 hover:bg-red-500/10 rounded-md transition-colors"
+                onClick={() => onDelete(subscription.id)}
+                className="p-2 text-muted hover:text-red-500 transition-colors"
+                title="Delete subscription"
               >
-                <Trash2 size={16} className="text-red-500" strokeWidth={1.5} />
-              </button>
-              <button
-                onClick={() => toggleExpand(subscription.id)}
-                className="p-2 hover:bg-accent/10 rounded-md transition-colors"
-              >
-                <MoreVertical size={16} className="text-accent" strokeWidth={1.5} />
+                <Trash className="w-4 h-4" />
               </button>
             </div>
           </div>
-
-          {expandedId === subscription.id && (
-            <div className="text-sm space-y-2 pt-2 border-t border-border/50">
-              <p><span className="text-ink/60">Started on:</span> {new Date(subscription.startDate).toLocaleDateString()}</p>
-              <p><span className="text-ink/60">Next billing:</span> {formatNextBilling(subscription.nextBillingDate)}</p>
-              {subscription.description && (
-                <p><span className="text-ink/60">Notes:</span> {subscription.description}</p>
-              )}
-            </div>
-          )}
         </div>
       ))}
-
-      {subscriptions.length === 0 && (
-        <div className="text-center py-8 text-ink/60">
-          <p>No subscriptions added yet</p>
-        </div>
-      )}
     </div>
   );
 }
