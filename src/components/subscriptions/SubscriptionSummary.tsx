@@ -1,4 +1,6 @@
-import { SubscriptionSummary as Summary } from '@/types/subscriptions';
+'use client';
+
+import { Currency, SubscriptionSummary as Summary } from '@/types/subscriptions';
 import { formatCurrency } from '@/utils/format';
 
 interface SubscriptionSummaryProps {
@@ -6,65 +8,78 @@ interface SubscriptionSummaryProps {
 }
 
 export function SubscriptionSummary({ summary }: SubscriptionSummaryProps) {
-  const hasWeekly = summary.totalWeekly > 0;
-  const hasMonthly = summary.totalMonthly > 0;
-  const hasQuarterly = summary.totalQuarterly > 0;
-  const hasYearly = summary.totalYearly > 0;
-
-  const originalTotals = Object.entries(summary.originalAmounts)
-    .filter(([_, amount]) => amount > 0)
-    .map(([currency, amount]) => formatCurrency(amount, currency as any))
-    .join(' + ');
+  const hasOriginalAmounts = Object.values(summary.originalAmounts).some(amount => amount > 0);
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        {hasWeekly && (
-          <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm font-medium text-muted">Weekly Subscriptions</div>
-            <div className="mt-1 text-lg font-semibold text-foreground">
-              {formatCurrency(summary.totalWeekly, 'EUR')}
-            </div>
-          </div>
-        )}
-
-        {hasMonthly && (
-          <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm font-medium text-muted">Monthly Subscriptions</div>
-            <div className="mt-1 text-lg font-semibold text-foreground">
-              {formatCurrency(summary.totalMonthly, 'EUR')}
-            </div>
-          </div>
-        )}
-
-        {hasQuarterly && (
-          <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm font-medium text-muted">Quarterly Subscriptions</div>
-            <div className="mt-1 text-lg font-semibold text-foreground">
-              {formatCurrency(summary.totalQuarterly, 'EUR')}
-            </div>
-          </div>
-        )}
-
-        {hasYearly && (
-          <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg">
-            <div className="text-sm font-medium text-muted">Yearly Subscriptions</div>
-            <div className="mt-1 text-lg font-semibold text-foreground">
-              {formatCurrency(summary.totalYearly, 'EUR')}
-            </div>
-          </div>
-        )}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <SummaryCard
+          title="Monthly"
+          amount={summary.totalMonthly}
+          period="per month"
+        />
+        <SummaryCard
+          title="Yearly"
+          amount={summary.totalYearly}
+          period="per year"
+        />
+        <SummaryCard
+          title="Weekly"
+          amount={summary.totalWeekly}
+          period="per week"
+        />
+        <SummaryCard
+          title="Quarterly"
+          amount={summary.totalQuarterly}
+          period="per quarter"
+        />
       </div>
 
-      <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg border-2 border-indigo-500">
-        <div className="text-sm font-medium text-muted">Monthly Total (All Subscriptions)</div>
-        <div className="mt-1 text-lg font-semibold text-foreground">
+      {hasOriginalAmounts && (
+        <div className="bg-paper dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <h4 className="text-sm font-medium text-muted mb-3">Original Currency Amounts</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {Object.entries(summary.originalAmounts)
+              .filter(([_, amount]) => amount > 0)
+              .map(([currency, amount]) => (
+                <div key={currency}>
+                  <p className="text-lg font-semibold journal-text text-foreground">
+                    {formatCurrency(amount, currency as Currency)}
+                  </p>
+                  <p className="text-sm text-muted">Total in {currency}</p>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
+
+      <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-6 text-center">
+        <h3 className="text-lg font-medium journal-text mb-2 text-foreground">
+          Total Monthly Spending
+        </h3>
+        <p className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400">
           {formatCurrency(summary.grandTotalMonthly, 'EUR')}
-        </div>
-        <div className="mt-1 text-xs text-muted">
-          Original amounts: {originalTotals}
-        </div>
+        </p>
+        <p className="text-sm text-muted mt-1">
+          All subscriptions converted to EUR monthly rate
+        </p>
       </div>
+    </div>
+  );
+}
+
+interface SummaryCardProps {
+  title: string;
+  amount: number;
+  period: string;
+}
+
+function SummaryCard({ title, amount, period }: SummaryCardProps) {
+  return (
+    <div className="bg-paper dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+      <h4 className="text-sm font-medium text-muted mb-1">{title}</h4>
+      <p className="text-xl font-semibold journal-text text-foreground">{formatCurrency(amount, 'EUR')}</p>
+      <p className="text-sm text-muted">{period}</p>
     </div>
   );
 }
