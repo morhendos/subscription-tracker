@@ -1,26 +1,32 @@
-import { Currency } from '@/types/subscriptions';
+import { Currency, EXCHANGE_RATES } from '@/types/subscriptions';
 
-const CURRENCY_SYMBOLS: Record<Currency, string> = {
-  EUR: '€',
-  USD: '$',
-  PLN: 'zł'
+const CURRENCY_LOCALES: Record<Currency, string> = {
+  EUR: 'de-DE', // German locale for Euro
+  USD: 'en-US', // US locale for USD
+  PLN: 'pl-PL'  // Polish locale for PLN
 };
 
-const EXCHANGE_RATES: Record<Currency, number> = {
-  EUR: 1,
-  USD: 0.85, // Example rate: 1 USD = 0.85 EUR
-  PLN: 0.22  // Example rate: 1 PLN = 0.22 EUR
-};
-
-export function formatCurrency(amount: number, currency: Currency): string {
-  const formatter = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+export function formatCurrency(amount: number | null | undefined, currency: Currency | null | undefined): string {
+  // Default to EUR if no currency provided
+  const currencyCode = currency || 'EUR';
   
-  return `${CURRENCY_SYMBOLS[currency]}${formatter.format(amount)}`;
+  // Default to 0 if no amount provided
+  const value = typeof amount === 'number' ? amount : 0;
+
+  return new Intl.NumberFormat(CURRENCY_LOCALES[currencyCode], {
+    style: 'currency',
+    currency: currencyCode,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
 }
 
 export function convertToEur(amount: number, fromCurrency: Currency): number {
+  if (fromCurrency === 'EUR') return amount;
   return amount * EXCHANGE_RATES[fromCurrency];
+}
+
+export function convertFromEur(amount: number, toCurrency: Currency): number {
+  if (toCurrency === 'EUR') return amount;
+  return amount / EXCHANGE_RATES[toCurrency];
 }
