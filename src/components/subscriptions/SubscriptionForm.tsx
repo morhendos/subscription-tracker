@@ -60,7 +60,7 @@ export function SubscriptionForm({
           onChange={handleChange}
           placeholder="Netflix, Spotify, etc."
           required
-          className="input-base"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
         />
       </div>
 
@@ -78,7 +78,7 @@ export function SubscriptionForm({
             min="0"
             step="0.01"
             required
-            className="input-base"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
         </div>
 
@@ -91,7 +91,7 @@ export function SubscriptionForm({
             name="currency"
             value={form.currency}
             onChange={handleChange}
-            className="input-base"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
             <option value="EUR">EUR</option>
             <option value="USD">USD</option>
@@ -110,7 +110,7 @@ export function SubscriptionForm({
             name="billingPeriod"
             value={form.billingPeriod}
             onChange={handleChange}
-            className="input-base"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
@@ -130,7 +130,7 @@ export function SubscriptionForm({
             value={form.startDate}
             onChange={handleChange}
             required
-            className="input-base"
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
         </div>
       </div>
@@ -145,7 +145,7 @@ export function SubscriptionForm({
           value={form.description}
           onChange={handleChange}
           rows={3}
-          className="input-base"
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
           placeholder="Add any notes about this subscription..."
         />
       </div>
@@ -155,14 +155,14 @@ export function SubscriptionForm({
           <button
             type="button"
             onClick={onCancel}
-            className="button-secondary"
+            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
             Cancel
           </button>
         )}
         <button
           type="submit"
-          className="button-primary"
+          className="rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           {initialData ? 'Update' : 'Add'} Subscription
         </button>
