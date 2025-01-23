@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Subscription } from '@/types/subscriptions';
-import { formatCurrency, formatDate } from '@/utils/format';
+import { formatCurrency } from '@/utils/format';
 import { Pencil, Trash, CreditCard } from 'lucide-react';
 
 interface SubscriptionListProps {
@@ -37,7 +37,7 @@ export function SubscriptionList({ subscriptions, onEdit, onDelete }: Subscripti
         >
           <div className="flex justify-between items-start gap-4">
             <div className="flex items-start gap-3">
-              <div className="mt-1 text-accent">
+              <div className="mt-1 text-accent dark:text-accent/90">
                 <CreditCard size={20} />
               </div>
               <div>
@@ -56,7 +56,7 @@ export function SubscriptionList({ subscriptions, onEdit, onDelete }: Subscripti
                 )}
 
                 <div className="mt-2 text-xs text-muted">
-                  Next billing: {formatDate(subscription.nextBillingDate || subscription.startDate)}
+                  Next billing: {new Date(subscription.nextBillingDate || subscription.startDate).toLocaleDateString()}
                 </div>
               </div>
             </div>
@@ -72,7 +72,7 @@ export function SubscriptionList({ subscriptions, onEdit, onDelete }: Subscripti
 
               <button
                 onClick={() => onDelete(subscription.id)}
-                className="p-2 text-muted hover:text-red-500 transition-colors"
+                className="p-2 text-muted hover:text-red-500 dark:hover:text-red-400 transition-colors"
                 title="Delete subscription"
               >
                 <Trash className="w-4 h-4" />
