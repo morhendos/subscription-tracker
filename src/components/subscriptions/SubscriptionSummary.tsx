@@ -20,7 +20,7 @@ export function SubscriptionSummary({ summary }: SubscriptionSummaryProps) {
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         {hasWeekly && (
-          <div className="bg-paper p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg">
             <div className="text-sm font-medium text-muted">Weekly Subscriptions</div>
             <div className="mt-1 text-lg font-semibold text-foreground">
               {formatCurrency(summary.totalWeekly, 'EUR')}
@@ -29,7 +29,7 @@ export function SubscriptionSummary({ summary }: SubscriptionSummaryProps) {
         )}
 
         {hasMonthly && (
-          <div className="bg-paper p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg">
             <div className="text-sm font-medium text-muted">Monthly Subscriptions</div>
             <div className="mt-1 text-lg font-semibold text-foreground">
               {formatCurrency(summary.totalMonthly, 'EUR')}
@@ -38,7 +38,7 @@ export function SubscriptionSummary({ summary }: SubscriptionSummaryProps) {
         )}
 
         {hasQuarterly && (
-          <div className="bg-paper p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg">
             <div className="text-sm font-medium text-muted">Quarterly Subscriptions</div>
             <div className="mt-1 text-lg font-semibold text-foreground">
               {formatCurrency(summary.totalQuarterly, 'EUR')}
@@ -47,7 +47,7 @@ export function SubscriptionSummary({ summary }: SubscriptionSummaryProps) {
         )}
 
         {hasYearly && (
-          <div className="bg-paper p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg">
             <div className="text-sm font-medium text-muted">Yearly Subscriptions</div>
             <div className="mt-1 text-lg font-semibold text-foreground">
               {formatCurrency(summary.totalYearly, 'EUR')}
@@ -56,7 +56,7 @@ export function SubscriptionSummary({ summary }: SubscriptionSummaryProps) {
         )}
       </div>
 
-      <div className="bg-paper p-4 rounded-lg border-2 border-accent dark:border-accent/90">
+      <div className="bg-paper dark:bg-gray-800 p-4 rounded-lg border-2 border-indigo-500">
         <div className="text-sm font-medium text-muted">Monthly Total (All Subscriptions)</div>
         <div className="mt-1 text-lg font-semibold text-foreground">
           {formatCurrency(summary.grandTotalMonthly, 'EUR')}
