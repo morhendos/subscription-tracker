@@ -1,0 +1,19 @@
+subscription-tracker/
+├── .env.example
+├── .eslintrc.json
+├── .gitignore
+├── README.md
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── src/
+│   ├── app/
+│   ├── components/
+│   ├── contexts/
+│   ├── hooks/
+│   ├── lib/
+│   ├── middleware.ts
+│   ├── types/
+│   └── utils/
+├── tailwind.config.js
+└── tsconfig.json
