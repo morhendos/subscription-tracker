@@ -1,23 +1,26 @@
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Subscription, SubscriptionFormData, SubscriptionSummary, Currency } from '@/types/subscriptions';
 import { convertToEur } from '@/utils/format';
+import { useState, useEffect } from 'react';
 
 const STORAGE_KEY = 'subscriptions';
 
-function migrateSubscriptions(subscriptions: any[]): Subscription[] {
-  return subscriptions.map(sub => ({
-    ...sub,
-    currency: sub.currency || 'EUR' // Default old subscriptions to EUR
-  }));
-}
-
 export function useSubscriptionStorage() {
-  const [subscriptions, setSubscriptions] = useLocalStorage<Subscription[]>(STORAGE_KEY, [], {
-    deserialize: (value) => {
-      const parsed = JSON.parse(value);
-      return migrateSubscriptions(parsed);
+  const [mounted, setMounted] = useState(false);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setSubscriptions(parsed);
+      }
+    } catch (error) {
+      console.error('Error loading subscriptions:', error);
     }
-  });
+  }, []);
 
   const addSubscription = (data: SubscriptionFormData): Subscription => {
     const newSubscription: Subscription = {
@@ -28,13 +31,17 @@ export function useSubscriptionStorage() {
       nextBillingDate: calculateNextBillingDate(data.startDate, data.billingPeriod)
     };
 
-    setSubscriptions(current => [...current, newSubscription]);
+    setSubscriptions(current => {
+      const newSubs = [...current, newSubscription];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSubs));
+      return newSubs;
+    });
     return newSubscription;
   };
 
   const updateSubscription = (id: string, data: Partial<SubscriptionFormData>) => {
-    setSubscriptions(current =>
-      current.map(sub =>
+    setSubscriptions(current => {
+      const updated = current.map(sub =>
         sub.id === id
           ? {
               ...sub,
@@ -45,20 +52,24 @@ export function useSubscriptionStorage() {
                 : sub.nextBillingDate
             }
           : sub
-      )
-    );
+      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const deleteSubscription = (id: string) => {
-    setSubscriptions(current => current.filter(sub => sub.id !== id));
+    setSubscriptions(current => {
+      const filtered = current.filter(sub => sub.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+      return filtered;
+    });
   };
 
   const calculateSummary = (): SubscriptionSummary => {
     const summary = subscriptions.reduce(
       (acc, sub) => {
         const priceInEur = convertToEur(sub.price, sub.currency || 'EUR');
-
-        // Track original currency amounts
         const currency = (sub.currency || 'EUR') as Currency;
         acc.originalAmounts[currency] = (acc.originalAmounts[currency] || 0) + sub.price;
 
@@ -73,7 +84,7 @@ export function useSubscriptionStorage() {
             break;
           case 'weekly':
             acc.totalWeekly += priceInEur;
-            acc.grandTotalMonthly += priceInEur * 4.33; // Average weeks per month
+            acc.grandTotalMonthly += priceInEur * 4.33;
             break;
           case 'quarterly':
             acc.totalQuarterly += priceInEur;
@@ -96,7 +107,6 @@ export function useSubscriptionStorage() {
       }
     );
 
-    // Round all values to 2 decimal places
     return {
       ...summary,
       totalMonthly: Math.round(summary.totalMonthly * 100) / 100,
@@ -118,7 +128,8 @@ export function useSubscriptionStorage() {
     addSubscription,
     updateSubscription,
     deleteSubscription,
-    calculateSummary
+    calculateSummary,
+    mounted
   };
 }
 
@@ -126,12 +137,10 @@ function calculateNextBillingDate(startDate: string, billingPeriod: string): str
   const date = new Date(startDate);
   const today = new Date();
   
-  // If start date is in the future, that's the next billing date
   if (date > today) {
     return date.toISOString();
   }
 
-  // Calculate how many periods have passed
   const timeDiff = today.getTime() - date.getTime();
   let periodInMs: number;
 
