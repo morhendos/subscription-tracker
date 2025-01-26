@@ -70,7 +70,7 @@ export default function SubscriptionsPage() {
         <PageHeader />
         
         <div className="grid gap-8 mt-8 lg:grid-cols-12">
-          <div className="lg:col-span-5 space-y-8">
+          <div className="lg:col-span-5">
             <Section title="Your Subscriptions">
               <SubscriptionList
                 subscriptions={subscriptions}
@@ -79,7 +79,9 @@ export default function SubscriptionsPage() {
                 mounted={mounted}
               />
             </Section>
+          </div>
 
+          <div className="lg:col-span-7 space-y-8">
             <Section
               title={editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}
             >
@@ -89,15 +91,15 @@ export default function SubscriptionsPage() {
                 initialData={editingSubscription || undefined}
               />
             </Section>
-          </div>
 
-          {subscriptions.length > 0 && (
-            <div className="lg:col-span-7 lg:sticky lg:top-4 lg:self-start space-y-8">
-              <Section title="Summary">
-                <SubscriptionSummary summary={calculateSummary()} />
-              </Section>
-            </div>
-          )}
+            {subscriptions.length > 0 && (
+              <div className="lg:sticky lg:top-4">
+                <Section title="Summary">
+                  <SubscriptionSummary summary={calculateSummary()} />
+                </Section>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
