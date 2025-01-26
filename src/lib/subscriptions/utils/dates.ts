@@ -1,9 +1,3 @@
-/**
- * Calculate next billing date based on start date and billing period
- * @param startDate - Initial subscription date
- * @param billingPeriod - Billing frequency (weekly, monthly, etc)
- * @returns Next billing date as ISO string
- */
 export function calculateNextBillingDate(startDate: string, billingPeriod: string): string {
   const date = new Date(startDate);
   const today = new Date();

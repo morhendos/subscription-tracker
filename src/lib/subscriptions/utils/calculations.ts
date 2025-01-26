@@ -2,11 +2,6 @@ import { Subscription, SubscriptionSummary, Currency } from '@/types/subscriptio
 import { convertToEur } from '@/utils/format';
 import { convertBetweenPeriods } from './periods';
 
-/**
- * Calculate subscription summary with total costs for different periods
- * @param subscriptions - List of all subscriptions
- * @returns Summary of costs for different periods
- */
 export function calculateSummary(subscriptions: Subscription[]): SubscriptionSummary {
   const summary = subscriptions
     .filter(sub => !sub.disabled)
@@ -16,10 +11,8 @@ export function calculateSummary(subscriptions: Subscription[]): SubscriptionSum
         const currency = (sub.currency || 'EUR') as Currency;
         acc.originalAmounts[currency] = (acc.originalAmounts[currency] || 0) + sub.price;
 
-        // Convert everything to monthly first and then to other periods
         const monthlyAmount = convertBetweenPeriods(priceInEur, sub.billingPeriod, 'monthly');
         
-        // Update all period totals
         acc.totalMonthly += monthlyAmount;
         acc.totalWeekly += convertBetweenPeriods(monthlyAmount, 'monthly', 'weekly');
         acc.totalYearly += convertBetweenPeriods(monthlyAmount, 'monthly', 'yearly');
