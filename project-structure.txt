@@ -24,6 +24,10 @@ subscription-tracker/
 │   │   ├── settings/
 │   │   ├── subscriptions/
 │   │   └── ui/
+│   │       ├── IconButton.tsx
+│   │       ├── card.tsx
+│   │       ├── input.tsx
+│   │       └── label.tsx
 │   ├── contexts/
 │   ├── hooks/
 │   ├── lib/
