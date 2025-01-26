@@ -53,18 +53,28 @@ export function useSubscriptionStorage() {
 
   const updateSubscription = (id: string, data: Partial<SubscriptionFormData>) => {
     setSubscriptions(current => {
-      const updated = current.map(sub =>
-        sub.id === id
-          ? {
-              ...sub,
-              ...data,
-              updatedAt: new Date().toISOString(),
-              nextBillingDate: data.startDate || data.billingPeriod
-                ? calculateNextBillingDate(data.startDate || sub.startDate, data.billingPeriod || sub.billingPeriod)
-                : sub.nextBillingDate
-            }
-          : sub
-      );
+      const updated = current.map(sub => {
+        if (sub.id !== id) return sub;
+
+        // Preserve existing values and merge with updates
+        const updatedSub = {
+          ...sub,
+          ...data,
+          description: data.description ?? sub.description, // Preserve description if not provided
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Update nextBillingDate if startDate or billingPeriod changed
+        if (data.startDate || data.billingPeriod) {
+          updatedSub.nextBillingDate = calculateNextBillingDate(
+            data.startDate || sub.startDate,
+            data.billingPeriod || sub.billingPeriod
+          );
+        }
+
+        return updatedSub;
+      });
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       return updated;
     });
@@ -100,45 +110,6 @@ export function useSubscriptionStorage() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
       return filtered;
     });
-  };
-
-  /**
-   * Converts an amount from one period to another
-   * @param amount - The amount to convert
-   * @param fromPeriod - The source billing period
-   * @param toPeriod - The target billing period
-   * @returns The converted amount
-   */
-  const convertBetweenPeriods = (
-    amount: number,
-    fromPeriod: string,
-    toPeriod: string
-  ): number => {
-    // First convert to monthly
-    let monthlyAmount = amount;
-    switch (fromPeriod) {
-      case 'weekly':
-        monthlyAmount = amount * 4.33; // Average weeks in a month
-        break;
-      case 'yearly':
-        monthlyAmount = amount / 12;
-        break;
-      case 'quarterly':
-        monthlyAmount = amount / 3;
-        break;
-    }
-
-    // Then convert from monthly to target period
-    switch (toPeriod) {
-      case 'weekly':
-        return monthlyAmount / 4.33;
-      case 'yearly':
-        return monthlyAmount * 12;
-      case 'quarterly':
-        return monthlyAmount * 3;
-      default: // monthly
-        return monthlyAmount;
-    }
   };
 
   const calculateSummary = (): SubscriptionSummary => {
@@ -242,4 +213,43 @@ function calculateNextBillingDate(startDate: string, billingPeriod: string): str
   const nextBillingDate = new Date(date.getTime() + (periodsElapsed * periodInMs));
 
   return nextBillingDate.toISOString();
+}
+
+/**
+ * Converts an amount from one period to another
+ * @param amount - The amount to convert
+ * @param fromPeriod - The source billing period
+ * @param toPeriod - The target billing period
+ * @returns The converted amount
+ */
+function convertBetweenPeriods(
+  amount: number,
+  fromPeriod: string,
+  toPeriod: string
+): number {
+  // First convert to monthly
+  let monthlyAmount = amount;
+  switch (fromPeriod) {
+    case 'weekly':
+      monthlyAmount = amount * 4.33; // Average weeks in a month
+      break;
+    case 'yearly':
+      monthlyAmount = amount / 12;
+      break;
+    case 'quarterly':
+      monthlyAmount = amount / 3;
+      break;
+  }
+
+  // Then convert from monthly to target period
+  switch (toPeriod) {
+    case 'weekly':
+      return monthlyAmount / 4.33;
+    case 'yearly':
+      return monthlyAmount * 12;
+    case 'quarterly':
+      return monthlyAmount * 3;
+    default: // monthly
+      return monthlyAmount;
+  }
 }
