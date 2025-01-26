@@ -15,6 +15,7 @@ export default function SubscriptionsPage() {
     addSubscription,
     updateSubscription,
     deleteSubscription,
+    toggleSubscription,
     calculateSummary,
     mounted
   } = useSubscriptionStorage();
@@ -40,6 +41,13 @@ export default function SubscriptionsPage() {
       if (editingSubscription?.id === id) {
         setEditingSubscription(null);
       }
+    }
+  };
+
+  const handleToggle = (id: string) => {
+    toggleSubscription(id);
+    if (editingSubscription?.id === id) {
+      setEditingSubscription(null);
     }
   };
 
@@ -76,6 +84,7 @@ export default function SubscriptionsPage() {
                 subscriptions={subscriptions}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onToggle={handleToggle}
                 mounted={mounted}
               />
             </Section>
