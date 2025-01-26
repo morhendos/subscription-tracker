@@ -12,6 +12,7 @@ const STORAGE_KEY = 'subscriptions';
  * @property {function} updateSubscription - Update existing subscription
  * @property {function} deleteSubscription - Remove a subscription
  * @property {function} toggleSubscription - Toggle subscription active state
+ * @property {function} toggleAllSubscriptions - Enable or disable all subscriptions
  * @property {function} calculateSummary - Calculate spending summary
  * @property {boolean} mounted - Component mount status
  */
@@ -76,6 +77,18 @@ export function useSubscriptionStorage() {
           ? { ...sub, disabled: !sub.disabled, updatedAt: new Date().toISOString() }
           : sub
       );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const toggleAllSubscriptions = (enabled: boolean) => {
+    setSubscriptions(current => {
+      const updated = current.map(sub => ({
+        ...sub,
+        disabled: !enabled,
+        updatedAt: new Date().toISOString()
+      }));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       return updated;
     });
@@ -185,6 +198,7 @@ export function useSubscriptionStorage() {
     updateSubscription,
     deleteSubscription,
     toggleSubscription,
+    toggleAllSubscriptions,
     calculateSummary,
     mounted
   };
