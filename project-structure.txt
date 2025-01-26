@@ -8,6 +8,13 @@ subscription-tracker/
 ├── postcss.config.js
 ├── src/
 │   ├── app/
+│   │   ├── api/
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── login/
+│   │   ├── page.tsx
+│   │   ├── providers.tsx
+│   │   └── subscriptions/
 │   ├── components/
 │   ├── contexts/
 │   ├── hooks/
