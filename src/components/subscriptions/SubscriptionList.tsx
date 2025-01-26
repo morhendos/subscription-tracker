@@ -9,23 +9,26 @@ interface SubscriptionListProps {
   subscriptions: Subscription[];
   onEdit: (subscription: Subscription) => void;
   onDelete: (id: string) => void;
+  mounted?: boolean;
 }
 
-export function SubscriptionList({ subscriptions, onEdit, onDelete }: SubscriptionListProps) {
+export function SubscriptionList({ subscriptions, onEdit, onDelete, mounted }: SubscriptionListProps) {
+  if (!mounted) {
+    return <div />;
+  }
+
+  const items = subscriptions || [];
+  
   const sortedSubscriptions = useMemo(() => {
-    return [...subscriptions].sort((a, b) => {
+    return [...items].sort((a, b) => {
       const nextDateA = new Date(a.nextBillingDate || a.startDate);
       const nextDateB = new Date(b.nextBillingDate || b.startDate);
       return nextDateA.getTime() - nextDateB.getTime();
     });
-  }, [subscriptions]);
+  }, [items]);
 
-  if (!subscriptions?.length) {
-    return (
-      <div className="text-center text-muted italic py-8">
-        No subscriptions added yet
-      </div>
-    );
+  if (!items.length) {
+    return <div className="text-center text-muted italic py-8">No subscriptions added yet</div>;
   }
 
   return (
@@ -33,7 +36,7 @@ export function SubscriptionList({ subscriptions, onEdit, onDelete }: Subscripti
       {sortedSubscriptions.map((subscription) => (
         <div
           key={subscription.id}
-          className="bg-paper p-4 rounded-lg shadow-sm animate-slide-in border border-gray-200 dark:border-gray-700"
+          className="bg-paper p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
         >
           <div className="flex justify-between items-start gap-4">
             <div className="flex items-start gap-3">

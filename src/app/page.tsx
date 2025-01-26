@@ -15,7 +15,8 @@ export default function SubscriptionsPage() {
     addSubscription,
     updateSubscription,
     deleteSubscription,
-    calculateSummary
+    calculateSummary,
+    mounted
   } = useSubscriptionStorage();
 
   const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
@@ -46,6 +47,23 @@ export default function SubscriptionsPage() {
     setEditingSubscription(null);
   };
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-background transition-colors duration-200">
+        <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-12 max-w-6xl">
+          <PageHeader />
+          <div className="grid gap-8 mt-8 lg:grid-cols-2">
+            <div className="h-[200px] animate-pulse rounded-lg bg-paper shadow-sm" />
+            <div className="space-y-8">
+              <div className="h-[400px] animate-pulse rounded-lg bg-paper shadow-sm" />
+              <div className="h-[200px] animate-pulse rounded-lg bg-paper shadow-sm" />
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">
       <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-12 max-w-6xl">
@@ -69,6 +87,7 @@ export default function SubscriptionsPage() {
                 subscriptions={subscriptions}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                mounted={mounted}
               />
             </Section>
 
