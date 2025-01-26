@@ -1,21 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Subscription, SubscriptionFormData } from '@/types/subscriptions';
-import { calculateSummary } from '../utils/calculations';
 import { calculateNextBillingDate } from '../utils/dates';
-
-const STORAGE_KEY = 'subscriptions';
+import { calculateSummary } from '../utils/calculations';
+import { loadSubscriptions, saveSubscriptions } from '../storage/localStorage';
 
 /**
  * Custom hook for managing subscription data with persistence
  * @returns {object} Subscription management methods and data
- * @property {Subscription[]} subscriptions - List of all subscriptions
- * @property {function} addSubscription - Add a new subscription
- * @property {function} updateSubscription - Update existing subscription
- * @property {function} deleteSubscription - Remove a subscription
- * @property {function} toggleSubscription - Toggle subscription active state
- * @property {function} toggleAllSubscriptions - Enable or disable all subscriptions
- * @property {function} calculateSummary - Calculate spending summary
- * @property {boolean} mounted - Component mount status
  */
 export function useSubscriptionStorage() {
   const [mounted, setMounted] = useState(false);
@@ -23,14 +14,9 @@ export function useSubscriptionStorage() {
 
   useEffect(() => {
     setMounted(true);
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setSubscriptions(parsed);
-      }
-    } catch (error) {
-      console.error('Error loading subscriptions:', error);
+    const storedSubs = loadSubscriptions();
+    if (storedSubs) {
+      setSubscriptions(storedSubs);
     }
   }, []);
 
@@ -46,7 +32,7 @@ export function useSubscriptionStorage() {
 
     setSubscriptions(current => {
       const newSubs = [...current, newSubscription];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSubs));
+      saveSubscriptions(newSubs);
       return newSubs;
     });
     return newSubscription;
@@ -54,19 +40,29 @@ export function useSubscriptionStorage() {
 
   const updateSubscription = (id: string, data: Partial<SubscriptionFormData>) => {
     setSubscriptions(current => {
-      const updated = current.map(sub =>
-        sub.id === id
-          ? {
-              ...sub,
-              ...data,
-              updatedAt: new Date().toISOString(),
-              nextBillingDate: data.startDate || data.billingPeriod
-                ? calculateNextBillingDate(data.startDate || sub.startDate, data.billingPeriod || sub.billingPeriod)
-                : sub.nextBillingDate
-            }
-          : sub
-      );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      const updated = current.map(sub => {
+        if (sub.id !== id) return sub;
+
+        // Preserve existing values and merge with updates
+        const updatedSub = {
+          ...sub,
+          ...data,
+          description: data.description ?? sub.description, // Preserve description if not provided
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Update nextBillingDate if startDate or billingPeriod changed
+        if (data.startDate || data.billingPeriod) {
+          updatedSub.nextBillingDate = calculateNextBillingDate(
+            data.startDate || sub.startDate,
+            data.billingPeriod || sub.billingPeriod
+          );
+        }
+
+        return updatedSub;
+      });
+
+      saveSubscriptions(updated);
       return updated;
     });
   };
@@ -78,7 +74,7 @@ export function useSubscriptionStorage() {
           ? { ...sub, disabled: !sub.disabled, updatedAt: new Date().toISOString() }
           : sub
       );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      saveSubscriptions(updated);
       return updated;
     });
   };
@@ -90,7 +86,7 @@ export function useSubscriptionStorage() {
         disabled: !enabled,
         updatedAt: new Date().toISOString()
       }));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      saveSubscriptions(updated);
       return updated;
     });
   };
@@ -98,7 +94,7 @@ export function useSubscriptionStorage() {
   const deleteSubscription = (id: string) => {
     setSubscriptions(current => {
       const filtered = current.filter(sub => sub.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+      saveSubscriptions(filtered);
       return filtered;
     });
   };
