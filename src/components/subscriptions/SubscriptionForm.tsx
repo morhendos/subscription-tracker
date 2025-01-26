@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Subscription, SubscriptionFormData } from '@/types/subscriptions';
 import { getLocalISOString } from '@/utils/dates';
 
@@ -14,13 +14,27 @@ export function SubscriptionForm({
   initialData?: Subscription;
 }) {
   const [form, setForm] = useState<SubscriptionFormData>({
-    name: initialData?.name || '',
-    price: initialData?.price || 0,
-    currency: initialData?.currency || 'EUR',
-    billingPeriod: initialData?.billingPeriod || 'monthly',
-    startDate: initialData?.startDate || getLocalISOString(new Date()),
+    name: '',
+    price: 0,
+    currency: 'EUR',
+    billingPeriod: 'monthly',
+    startDate: getLocalISOString(new Date()),
     description: ''
   });
+
+  // Use useEffect to update form when initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setForm({
+        name: initialData.name,
+        price: initialData.price,
+        currency: initialData.currency,
+        billingPeriod: initialData.billingPeriod,
+        startDate: initialData.startDate,
+        description: initialData.description || ''
+      });
+    }
+  }, [initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +52,7 @@ export function SubscriptionForm({
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({
       ...prev,
@@ -135,6 +149,21 @@ export function SubscriptionForm({
             className={inputClasses}
           />
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-foreground">
+          Description
+        </label>
+        <textarea
+          id="description"
+          name="description"
+          value={form.description}
+          onChange={handleChange}
+          rows={2}
+          className={inputClasses}
+          placeholder="Optional notes about this subscription"
+        />
       </div>
 
       <div className="flex justify-end space-x-4 p-1">
