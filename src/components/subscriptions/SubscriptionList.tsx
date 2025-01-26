@@ -3,13 +3,14 @@
 import { useMemo } from 'react';
 import { Subscription } from '@/types/subscriptions';
 import { formatCurrency } from '@/utils/format';
-import { Pencil, Trash, CreditCard } from 'lucide-react';
+import { Pencil, Trash, CreditCard, EyeOff, Eye } from 'lucide-react';
 
 interface SubscriptionListProps {
   subscriptions: Subscription[];
   onEdit: (subscription: Subscription) => void;
   onDelete: (id: string) => void;
   onToggle: (id: string) => void;
+  onToggleAll: (enabled: boolean) => void;
   mounted?: boolean;
 }
 
@@ -18,6 +19,7 @@ export function SubscriptionList({
   onEdit, 
   onDelete, 
   onToggle,
+  onToggleAll,
   mounted 
 }: SubscriptionListProps) {
   if (!mounted) {
@@ -25,6 +27,7 @@ export function SubscriptionList({
   }
 
   const items = subscriptions || [];
+  const activeCount = items.filter(sub => !sub.disabled).length;
   
   const sortedSubscriptions = useMemo(() => {
     return [...items].sort((a, b) => {
@@ -40,6 +43,30 @@ export function SubscriptionList({
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between pb-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="text-sm text-muted">
+          {activeCount} of {items.length} active
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onToggleAll(false)}
+            className="flex items-center gap-1 px-2 py-1 text-sm text-muted hover:text-foreground transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Disable all subscriptions"
+          >
+            <EyeOff size={16} />
+            <span className="hidden sm:inline">Disable All</span>
+          </button>
+          <button
+            onClick={() => onToggleAll(true)}
+            className="flex items-center gap-1 px-2 py-1 text-sm text-muted hover:text-foreground transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            title="Enable all subscriptions"
+          >
+            <Eye size={16} />
+            <span className="hidden sm:inline">Enable All</span>
+          </button>
+        </div>
+      </div>
+
       {sortedSubscriptions.map((subscription) => (
         <div
           key={subscription.id}
