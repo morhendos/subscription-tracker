@@ -1,0 +1,78 @@
+subscription-tracker/
+├── README.md
+├── next-env.d.ts
+├── next.config.js
+├── package.json
+├── postcss.config.js
+├── scripts
+│   └── tree.js
+├── src
+│   ├── app
+│   │   ├── api
+│   │   │   ├── auth
+│   │   │   │   └── [...nextauth]
+│   │   │   │       └── route.ts
+│   │   │   └── subscriptions
+│   │   │       ├── [id]
+│   │   │       │   └── route.ts
+│   │   │       └── route.ts
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── login
+│   │   │   └── page.tsx
+│   │   ├── page.tsx
+│   │   ├── providers.tsx
+│   │   └── subscriptions
+│   │       ├── error.tsx
+│   │       ├── layout.tsx
+│   │       ├── loading.tsx
+│   │       └── page.tsx
+│   ├── components
+│   │   ├── ThemeToggle.tsx
+│   │   ├── common
+│   │   │   └── Section.tsx
+│   │   ├── error-boundary.tsx
+│   │   ├── layout
+│   │   │   └── PageHeader.tsx
+│   │   ├── loading.tsx
+│   │   ├── settings
+│   │   │   └── HeaderControls.tsx
+│   │   ├── subscriptions
+│   │   │   ├── AddSubscriptionButton.tsx
+│   │   │   ├── DeleteSubscriptionDialog.tsx
+│   │   │   ├── SubscriptionForm.tsx
+│   │   │   ├── SubscriptionList.tsx
+│   │   │   └── SubscriptionSummary.tsx
+│   │   └── ui
+│   │       ├── IconButton.tsx
+│   │       ├── card.tsx
+│   │       ├── input.tsx
+│   │       └── label.tsx
+│   ├── contexts
+│   │   └── DateContext.tsx
+│   ├── hooks
+│   │   ├── useLocalStorage.ts
+│   │   └── useTheme.ts
+│   ├── lib
+│   │   ├── auth
+│   │   │   ├── auth-options.ts
+│   │   │   ├── auth-service.ts
+│   │   │   ├── config.ts
+│   │   │   ├── index.ts
+│   │   │   └── validation.ts
+│   │   ├── subscriptions
+│   │   │   └── storage.ts
+│   │   ├── utils.ts
+│   │   └── validations
+│   │       └── subscription.ts
+│   ├── middleware.ts
+│   ├── types
+│   │   ├── auth.ts
+│   │   ├── next-auth.d.ts
+│   │   ├── subscription.ts
+│   │   └── subscriptions.ts
+│   └── utils
+│       ├── dates.ts
+│       └── format.ts
+├── tailwind.config.js
+└── tsconfig.json
