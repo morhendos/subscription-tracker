@@ -121,40 +121,16 @@ export function useSubscriptionStorage() {
         const currency = (sub.currency || 'EUR') as Currency;
         acc.originalAmounts[currency] = (acc.originalAmounts[currency] || 0) + sub.price;
 
-        // Update period-specific totals
-        switch (sub.billingPeriod) {
-          case 'monthly':
-            acc.totalMonthly += priceInEur;
-            acc.totalWeekly += convertBetweenPeriods(priceInEur, 'monthly', 'weekly');
-            acc.totalYearly += convertBetweenPeriods(priceInEur, 'monthly', 'yearly');
-            acc.totalQuarterly += convertBetweenPeriods(priceInEur, 'monthly', 'quarterly');
-            acc.grandTotalMonthly += priceInEur;
-            break;
-          case 'yearly':
-            const monthlyFromYearly = priceInEur / 12;
-            acc.totalMonthly += monthlyFromYearly;
-            acc.totalWeekly += convertBetweenPeriods(monthlyFromYearly, 'monthly', 'weekly');
-            acc.totalYearly += priceInEur;
-            acc.totalQuarterly += convertBetweenPeriods(monthlyFromYearly, 'monthly', 'quarterly');
-            acc.grandTotalMonthly += monthlyFromYearly;
-            break;
-          case 'weekly':
-            const monthlyFromWeekly = priceInEur * 4.33;
-            acc.totalMonthly += monthlyFromWeekly;
-            acc.totalWeekly += priceInEur;
-            acc.totalYearly += convertBetweenPeriods(monthlyFromWeekly, 'monthly', 'yearly');
-            acc.totalQuarterly += convertBetweenPeriods(monthlyFromWeekly, 'monthly', 'quarterly');
-            acc.grandTotalMonthly += monthlyFromWeekly;
-            break;
-          case 'quarterly':
-            const monthlyFromQuarterly = priceInEur / 3;
-            acc.totalMonthly += monthlyFromQuarterly;
-            acc.totalWeekly += convertBetweenPeriods(monthlyFromQuarterly, 'monthly', 'weekly');
-            acc.totalYearly += convertBetweenPeriods(monthlyFromQuarterly, 'monthly', 'yearly');
-            acc.totalQuarterly += priceInEur;
-            acc.grandTotalMonthly += monthlyFromQuarterly;
-            break;
-        }
+        // Convert everything to monthly first and then to other periods
+        const monthlyAmount = convertBetweenPeriods(priceInEur, sub.billingPeriod, 'monthly');
+        
+        // Update all period totals
+        acc.totalMonthly += monthlyAmount;
+        acc.totalWeekly += convertBetweenPeriods(monthlyAmount, 'monthly', 'weekly');
+        acc.totalYearly += convertBetweenPeriods(monthlyAmount, 'monthly', 'yearly');
+        acc.totalQuarterly += convertBetweenPeriods(monthlyAmount, 'monthly', 'quarterly');
+        acc.grandTotalMonthly += monthlyAmount;
+
         return acc;
       },
       {
