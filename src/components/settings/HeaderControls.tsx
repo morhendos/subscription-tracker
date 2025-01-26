@@ -7,10 +7,12 @@ import { useCallback } from 'react';
 function Controls({
   theme,
   toggleTheme,
+  mounted,
   storageActions
 }: {
   theme: string;
   toggleTheme: () => void;
+  mounted: boolean;
   storageActions: { importData: (data: unknown) => Promise<void>; exportData: () => void; }
 }) {
   const handleImport = useCallback(async () => {
@@ -55,10 +57,12 @@ function Controls({
         onClick={toggleTheme}
         aria-label="Toggle theme"
       >
-        {theme === 'dark' ? (
-          <Sun size={20} strokeWidth={1.5} />
-        ) : (
-          <Moon size={20} strokeWidth={1.5} />
+        {mounted && (
+          theme === 'dark' ? (
+            <Sun size={20} strokeWidth={1.5} />
+          ) : (
+            <Moon size={20} strokeWidth={1.5} />
+          )
         )}
       </HeaderButton>
     </div>
@@ -81,11 +85,12 @@ function HeaderButton({
 }
 
 export function HeaderControls() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, mounted } = useTheme();
   
   return (
     <Controls
       theme={theme}
+      mounted={mounted}
       toggleTheme={toggleTheme}
       storageActions={{
         importData: async (data) => {
