@@ -9,10 +9,17 @@ interface SubscriptionListProps {
   subscriptions: Subscription[];
   onEdit: (subscription: Subscription) => void;
   onDelete: (id: string) => void;
+  onToggle: (id: string) => void;
   mounted?: boolean;
 }
 
-export function SubscriptionList({ subscriptions, onEdit, onDelete, mounted }: SubscriptionListProps) {
+export function SubscriptionList({ 
+  subscriptions, 
+  onEdit, 
+  onDelete, 
+  onToggle,
+  mounted 
+}: SubscriptionListProps) {
   if (!mounted) {
     return <div />;
   }
@@ -36,15 +43,23 @@ export function SubscriptionList({ subscriptions, onEdit, onDelete, mounted }: S
       {sortedSubscriptions.map((subscription) => (
         <div
           key={subscription.id}
-          className="bg-paper p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+          className={`bg-paper p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 ${subscription.disabled ? 'opacity-50' : ''} cursor-pointer hover:border-accent dark:hover:border-accent`}
+          onClick={() => onToggle(subscription.id)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              onToggle(subscription.id);
+            }
+          }}
         >
           <div className="flex justify-between items-start gap-4">
             <div className="flex items-start gap-3">
-              <div className="mt-1 text-accent dark:text-accent/90">
+              <div className={`mt-1 ${subscription.disabled ? 'text-muted' : 'text-accent dark:text-accent/90'}`}>
                 <CreditCard size={20} />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">
+                <h3 className={`font-semibold ${subscription.disabled ? 'text-muted line-through' : 'text-foreground'}`}>
                   {subscription.name}
                 </h3>
                 
@@ -64,7 +79,10 @@ export function SubscriptionList({ subscriptions, onEdit, onDelete, mounted }: S
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div 
+              className="flex items-center gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 onClick={() => onEdit(subscription)}
                 className="p-2 text-muted hover:text-foreground transition-colors"

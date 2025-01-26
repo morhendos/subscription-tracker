@@ -11,6 +11,7 @@ const STORAGE_KEY = 'subscriptions';
  * @property {function} addSubscription - Add a new subscription
  * @property {function} updateSubscription - Update existing subscription
  * @property {function} deleteSubscription - Remove a subscription
+ * @property {function} toggleSubscription - Toggle subscription active state
  * @property {function} calculateSummary - Calculate spending summary
  * @property {boolean} mounted - Component mount status
  */
@@ -37,7 +38,8 @@ export function useSubscriptionStorage() {
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      nextBillingDate: calculateNextBillingDate(data.startDate, data.billingPeriod)
+      nextBillingDate: calculateNextBillingDate(data.startDate, data.billingPeriod),
+      disabled: false
     };
 
     setSubscriptions(current => {
@@ -60,6 +62,18 @@ export function useSubscriptionStorage() {
                 ? calculateNextBillingDate(data.startDate || sub.startDate, data.billingPeriod || sub.billingPeriod)
                 : sub.nextBillingDate
             }
+          : sub
+      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const toggleSubscription = (id: string) => {
+    setSubscriptions(current => {
+      const updated = current.map(sub =>
+        sub.id === id
+          ? { ...sub, disabled: !sub.disabled, updatedAt: new Date().toISOString() }
           : sub
       );
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
@@ -115,37 +129,39 @@ export function useSubscriptionStorage() {
   };
 
   const calculateSummary = (): SubscriptionSummary => {
-    const summary = subscriptions.reduce(
-      (acc, sub) => {
-        const priceInEur = convertToEur(sub.price, sub.currency || 'EUR');
-        const currency = (sub.currency || 'EUR') as Currency;
-        acc.originalAmounts[currency] = (acc.originalAmounts[currency] || 0) + sub.price;
+    const summary = subscriptions
+      .filter(sub => !sub.disabled)
+      .reduce(
+        (acc, sub) => {
+          const priceInEur = convertToEur(sub.price, sub.currency || 'EUR');
+          const currency = (sub.currency || 'EUR') as Currency;
+          acc.originalAmounts[currency] = (acc.originalAmounts[currency] || 0) + sub.price;
 
-        // Convert everything to monthly first and then to other periods
-        const monthlyAmount = convertBetweenPeriods(priceInEur, sub.billingPeriod, 'monthly');
-        
-        // Update all period totals
-        acc.totalMonthly += monthlyAmount;
-        acc.totalWeekly += convertBetweenPeriods(monthlyAmount, 'monthly', 'weekly');
-        acc.totalYearly += convertBetweenPeriods(monthlyAmount, 'monthly', 'yearly');
-        acc.totalQuarterly += convertBetweenPeriods(monthlyAmount, 'monthly', 'quarterly');
-        acc.grandTotalMonthly += monthlyAmount;
+          // Convert everything to monthly first and then to other periods
+          const monthlyAmount = convertBetweenPeriods(priceInEur, sub.billingPeriod, 'monthly');
+          
+          // Update all period totals
+          acc.totalMonthly += monthlyAmount;
+          acc.totalWeekly += convertBetweenPeriods(monthlyAmount, 'monthly', 'weekly');
+          acc.totalYearly += convertBetweenPeriods(monthlyAmount, 'monthly', 'yearly');
+          acc.totalQuarterly += convertBetweenPeriods(monthlyAmount, 'monthly', 'quarterly');
+          acc.grandTotalMonthly += monthlyAmount;
 
-        return acc;
-      },
-      {
-        totalMonthly: 0,
-        totalYearly: 0,
-        totalWeekly: 0,
-        totalQuarterly: 0,
-        grandTotalMonthly: 0,
-        originalAmounts: {
-          EUR: 0,
-          USD: 0,
-          PLN: 0
+          return acc;
+        },
+        {
+          totalMonthly: 0,
+          totalYearly: 0,
+          totalWeekly: 0,
+          totalQuarterly: 0,
+          grandTotalMonthly: 0,
+          originalAmounts: {
+            EUR: 0,
+            USD: 0,
+            PLN: 0
+          }
         }
-      }
-    );
+      );
 
     return {
       ...summary,
@@ -168,6 +184,7 @@ export function useSubscriptionStorage() {
     addSubscription,
     updateSubscription,
     deleteSubscription,
+    toggleSubscription,
     calculateSummary,
     mounted
   };
