@@ -11,6 +11,8 @@ const STORAGE_KEY = 'subscriptions';
  * @property {function} addSubscription - Add a new subscription
  * @property {function} updateSubscription - Update existing subscription
  * @property {function} deleteSubscription - Remove a subscription
+ * @property {function} toggleSubscription - Toggle subscription active state
+ * @property {function} toggleAllSubscriptions - Enable or disable all subscriptions
  * @property {function} calculateSummary - Calculate spending summary
  * @property {boolean} mounted - Component mount status
  */
@@ -37,7 +39,8 @@ export function useSubscriptionStorage() {
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      nextBillingDate: calculateNextBillingDate(data.startDate, data.billingPeriod)
+      nextBillingDate: calculateNextBillingDate(data.startDate, data.billingPeriod),
+      disabled: false
     };
 
     setSubscriptions(current => {
@@ -50,18 +53,52 @@ export function useSubscriptionStorage() {
 
   const updateSubscription = (id: string, data: Partial<SubscriptionFormData>) => {
     setSubscriptions(current => {
+      const updated = current.map(sub => {
+        if (sub.id !== id) return sub;
+
+        // Preserve existing values and merge with updates
+        const updatedSub = {
+          ...sub,
+          ...data,
+          description: data.description ?? sub.description, // Preserve description if not provided
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Update nextBillingDate if startDate or billingPeriod changed
+        if (data.startDate || data.billingPeriod) {
+          updatedSub.nextBillingDate = calculateNextBillingDate(
+            data.startDate || sub.startDate,
+            data.billingPeriod || sub.billingPeriod
+          );
+        }
+
+        return updatedSub;
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const toggleSubscription = (id: string) => {
+    setSubscriptions(current => {
       const updated = current.map(sub =>
         sub.id === id
-          ? {
-              ...sub,
-              ...data,
-              updatedAt: new Date().toISOString(),
-              nextBillingDate: data.startDate || data.billingPeriod
-                ? calculateNextBillingDate(data.startDate || sub.startDate, data.billingPeriod || sub.billingPeriod)
-                : sub.nextBillingDate
-            }
+          ? { ...sub, disabled: !sub.disabled, updatedAt: new Date().toISOString() }
           : sub
       );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const toggleAllSubscriptions = (enabled: boolean) => {
+    setSubscriptions(current => {
+      const updated = current.map(sub => ({
+        ...sub,
+        disabled: !enabled,
+        updatedAt: new Date().toISOString()
+      }));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       return updated;
     });
@@ -76,45 +113,39 @@ export function useSubscriptionStorage() {
   };
 
   const calculateSummary = (): SubscriptionSummary => {
-    const summary = subscriptions.reduce(
-      (acc, sub) => {
-        const priceInEur = convertToEur(sub.price, sub.currency || 'EUR');
-        const currency = (sub.currency || 'EUR') as Currency;
-        acc.originalAmounts[currency] = (acc.originalAmounts[currency] || 0) + sub.price;
+    const summary = subscriptions
+      .filter(sub => !sub.disabled)
+      .reduce(
+        (acc, sub) => {
+          const priceInEur = convertToEur(sub.price, sub.currency || 'EUR');
+          const currency = (sub.currency || 'EUR') as Currency;
+          acc.originalAmounts[currency] = (acc.originalAmounts[currency] || 0) + sub.price;
 
-        switch (sub.billingPeriod) {
-          case 'monthly':
-            acc.totalMonthly += priceInEur;
-            acc.grandTotalMonthly += priceInEur;
-            break;
-          case 'yearly':
-            acc.totalYearly += priceInEur;
-            acc.grandTotalMonthly += priceInEur / 12;
-            break;
-          case 'weekly':
-            acc.totalWeekly += priceInEur;
-            acc.grandTotalMonthly += priceInEur * 4.33;
-            break;
-          case 'quarterly':
-            acc.totalQuarterly += priceInEur;
-            acc.grandTotalMonthly += priceInEur / 3;
-            break;
+          // Convert everything to monthly first and then to other periods
+          const monthlyAmount = convertBetweenPeriods(priceInEur, sub.billingPeriod, 'monthly');
+          
+          // Update all period totals
+          acc.totalMonthly += monthlyAmount;
+          acc.totalWeekly += convertBetweenPeriods(monthlyAmount, 'monthly', 'weekly');
+          acc.totalYearly += convertBetweenPeriods(monthlyAmount, 'monthly', 'yearly');
+          acc.totalQuarterly += convertBetweenPeriods(monthlyAmount, 'monthly', 'quarterly');
+          acc.grandTotalMonthly += monthlyAmount;
+
+          return acc;
+        },
+        {
+          totalMonthly: 0,
+          totalYearly: 0,
+          totalWeekly: 0,
+          totalQuarterly: 0,
+          grandTotalMonthly: 0,
+          originalAmounts: {
+            EUR: 0,
+            USD: 0,
+            PLN: 0
+          }
         }
-        return acc;
-      },
-      {
-        totalMonthly: 0,
-        totalYearly: 0,
-        totalWeekly: 0,
-        totalQuarterly: 0,
-        grandTotalMonthly: 0,
-        originalAmounts: {
-          EUR: 0,
-          USD: 0,
-          PLN: 0
-        }
-      }
-    );
+      );
 
     return {
       ...summary,
@@ -137,6 +168,8 @@ export function useSubscriptionStorage() {
     addSubscription,
     updateSubscription,
     deleteSubscription,
+    toggleSubscription,
+    toggleAllSubscriptions,
     calculateSummary,
     mounted
   };
@@ -180,4 +213,43 @@ function calculateNextBillingDate(startDate: string, billingPeriod: string): str
   const nextBillingDate = new Date(date.getTime() + (periodsElapsed * periodInMs));
 
   return nextBillingDate.toISOString();
+}
+
+/**
+ * Converts an amount from one period to another
+ * @param amount - The amount to convert
+ * @param fromPeriod - The source billing period
+ * @param toPeriod - The target billing period
+ * @returns The converted amount
+ */
+function convertBetweenPeriods(
+  amount: number,
+  fromPeriod: string,
+  toPeriod: string
+): number {
+  // First convert to monthly
+  let monthlyAmount = amount;
+  switch (fromPeriod) {
+    case 'weekly':
+      monthlyAmount = amount * 4.33; // Average weeks in a month
+      break;
+    case 'yearly':
+      monthlyAmount = amount / 12;
+      break;
+    case 'quarterly':
+      monthlyAmount = amount / 3;
+      break;
+  }
+
+  // Then convert from monthly to target period
+  switch (toPeriod) {
+    case 'weekly':
+      return monthlyAmount / 4.33;
+    case 'yearly':
+      return monthlyAmount * 12;
+    case 'quarterly':
+      return monthlyAmount * 3;
+    default: // monthly
+      return monthlyAmount;
+  }
 }
