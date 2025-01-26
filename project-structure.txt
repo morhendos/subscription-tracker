@@ -16,6 +16,14 @@ subscription-tracker/
 │   │   ├── providers.tsx
 │   │   └── subscriptions/
 │   ├── components/
+│   │   ├── ThemeToggle.tsx
+│   │   ├── common/
+│   │   ├── error-boundary.tsx
+│   │   ├── layout/
+│   │   ├── loading.tsx
+│   │   ├── settings/
+│   │   ├── subscriptions/
+│   │   └── ui/
 │   ├── contexts/
 │   ├── hooks/
 │   ├── lib/
