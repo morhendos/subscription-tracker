@@ -4,6 +4,7 @@ subscription-tracker/
 ├── next.config.js
 ├── package.json
 ├── postcss.config.js
+├── project-structure.txt
 ├── scripts
 │   └── tree.js
 ├── src
@@ -61,7 +62,14 @@ subscription-tracker/
 │   │   │   ├── index.ts
 │   │   │   └── validation.ts
 │   │   ├── subscriptions
-│   │   │   └── storage.ts
+│   │   │   ├── hooks
+│   │   │   │   └── useSubscriptionStorage.ts
+│   │   │   ├── index.ts
+│   │   │   ├── storage.ts
+│   │   │   └── utils
+│   │   │       ├── calculations.ts
+│   │   │       ├── dates.ts
+│   │   │       └── periods.ts
 │   │   ├── utils.ts
 │   │   └── validations
 │   │       └── subscription.ts
