@@ -69,8 +69,8 @@ export default function SubscriptionsPage() {
       <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-12 max-w-7xl">
         <PageHeader />
         
-        <div className="grid gap-8 mt-8 lg:grid-cols-10">
-          <div className="lg:col-span-6 space-y-8">
+        <div className="grid gap-8 mt-8 lg:grid-cols-12">
+          <div className="lg:col-span-5 space-y-8">
             <Section title="Your Subscriptions">
               <SubscriptionList
                 subscriptions={subscriptions}
@@ -92,7 +92,7 @@ export default function SubscriptionsPage() {
           </div>
 
           {subscriptions.length > 0 && (
-            <div className="lg:col-span-4 lg:sticky lg:top-4 lg:self-start space-y-8">
+            <div className="lg:col-span-7 lg:sticky lg:top-4 lg:self-start space-y-8">
               <Section title="Summary">
                 <SubscriptionSummary summary={calculateSummary()} />
               </Section>
