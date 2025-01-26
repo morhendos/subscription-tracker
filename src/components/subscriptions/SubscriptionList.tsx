@@ -9,10 +9,14 @@ interface SubscriptionListProps {
   subscriptions: Subscription[];
   onEdit: (subscription: Subscription) => void;
   onDelete: (id: string) => void;
+  mounted?: boolean;
 }
 
-export function SubscriptionList({ subscriptions, onEdit, onDelete }: SubscriptionListProps) {
-  // Ensure subscriptions is always an array
+export function SubscriptionList({ subscriptions, onEdit, onDelete, mounted }: SubscriptionListProps) {
+  if (!mounted) {
+    return <div />;
+  }
+
   const items = subscriptions || [];
   
   const sortedSubscriptions = useMemo(() => {
@@ -23,7 +27,6 @@ export function SubscriptionList({ subscriptions, onEdit, onDelete }: Subscripti
     });
   }, [items]);
 
-  // Return early for empty state
   if (!items.length) {
     return <div className="text-center text-muted italic py-8">No subscriptions added yet</div>;
   }
