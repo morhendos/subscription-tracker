@@ -19,7 +19,7 @@ export function SubscriptionForm({
     currency: initialData?.currency || 'EUR',
     billingPeriod: initialData?.billingPeriod || 'monthly',
     startDate: initialData?.startDate || getLocalISOString(new Date()),
-    description: initialData?.description || ''
+    description: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -38,7 +38,7 @@ export function SubscriptionForm({
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({
       ...prev,
@@ -135,21 +135,6 @@ export function SubscriptionForm({
             className={inputClasses}
           />
         </div>
-      </div>
-
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-foreground">
-          Description (optional)
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          rows={3}
-          className={inputClasses}
-          placeholder="Add any notes about this subscription..."
-        />
       </div>
 
       <div className="flex justify-end space-x-4 p-1">

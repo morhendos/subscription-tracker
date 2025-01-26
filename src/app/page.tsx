@@ -50,7 +50,7 @@ export default function SubscriptionsPage() {
   if (!mounted) {
     return (
       <div className="min-h-screen bg-background transition-colors duration-200">
-        <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-12 max-w-6xl">
+        <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-12 max-w-7xl">
           <PageHeader />
           <div className="grid gap-8 mt-8 lg:grid-cols-2">
             <div className="h-[200px] animate-pulse rounded-lg bg-paper shadow-sm" />
@@ -66,22 +66,11 @@ export default function SubscriptionsPage() {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">
-      <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-12 max-w-6xl">
+      <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-12 max-w-7xl">
         <PageHeader />
         
-        <div className="grid gap-8 mt-8 lg:grid-cols-2">
-          <Section
-            title={editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}
-            className="lg:order-2"
-          >
-            <SubscriptionForm
-              onSubmit={handleSubmit}
-              onCancel={editingSubscription ? handleCancel : undefined}
-              initialData={editingSubscription || undefined}
-            />
-          </Section>
-
-          <div className="space-y-8 lg:order-1">
+        <div className="grid gap-8 mt-8 lg:grid-cols-12">
+          <div className="lg:col-span-5">
             <Section title="Your Subscriptions">
               <SubscriptionList
                 subscriptions={subscriptions}
@@ -90,11 +79,25 @@ export default function SubscriptionsPage() {
                 mounted={mounted}
               />
             </Section>
+          </div>
+
+          <div className="lg:col-span-7 space-y-8">
+            <Section
+              title={editingSubscription ? 'Edit Subscription' : 'Add New Subscription'}
+            >
+              <SubscriptionForm
+                onSubmit={handleSubmit}
+                onCancel={editingSubscription ? handleCancel : undefined}
+                initialData={editingSubscription || undefined}
+              />
+            </Section>
 
             {subscriptions.length > 0 && (
-              <Section title="Summary">
-                <SubscriptionSummary summary={calculateSummary()} />
-              </Section>
+              <div className="lg:sticky lg:top-4">
+                <Section title="Summary">
+                  <SubscriptionSummary summary={calculateSummary()} />
+                </Section>
+              </div>
             )}
           </div>
         </div>
