@@ -1,10 +1,19 @@
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useState, useEffect } from 'react';
 import { Subscription, SubscriptionFormData, SubscriptionSummary, Currency } from '@/types/subscriptions';
 import { convertToEur } from '@/utils/format';
-import { useState, useEffect } from 'react';
 
 const STORAGE_KEY = 'subscriptions';
 
+/**
+ * Custom hook for managing subscription data with persistence
+ * @returns {object} Subscription management methods and data
+ * @property {Subscription[]} subscriptions - List of all subscriptions
+ * @property {function} addSubscription - Add a new subscription
+ * @property {function} updateSubscription - Update existing subscription
+ * @property {function} deleteSubscription - Remove a subscription
+ * @property {function} calculateSummary - Calculate spending summary
+ * @property {boolean} mounted - Component mount status
+ */
 export function useSubscriptionStorage() {
   const [mounted, setMounted] = useState(false);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -133,6 +142,12 @@ export function useSubscriptionStorage() {
   };
 }
 
+/**
+ * Calculate next billing date based on start date and billing period
+ * @param startDate - Initial subscription date
+ * @param billingPeriod - Billing frequency (weekly, monthly, etc)
+ * @returns Next billing date as ISO string
+ */
 function calculateNextBillingDate(startDate: string, billingPeriod: string): string {
   const date = new Date(startDate);
   const today = new Date();
