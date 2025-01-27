@@ -10,10 +10,9 @@ export function AddSubscriptionButton({ onClick }: AddSubscriptionButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-md bg-accent/10 p-4 transition-colors hover:bg-accent/15 flex items-center justify-center text-accent gap-2"
+      className="rounded-md border border-transparent bg-accent dark:bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 dark:hover:bg-accent/90 focus:outline-none focus:ring-2 focus:ring-accent dark:focus:ring-accent focus:ring-offset-2"
     >
-      <Plus size={20} strokeWidth={1.5} />
-      <span>Add Subscription</span>
+      Add Subscription
     </button>
   );
 }
