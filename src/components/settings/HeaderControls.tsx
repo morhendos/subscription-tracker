@@ -78,7 +78,8 @@ function HeaderButton({
     <button
       {...props}
       className={`w-10 h-10 rounded-full flex items-center justify-center
-        text-muted-foreground hover:text-foreground transition-colors duration-200 ${className || ''}`}
+        text-foreground/70 hover:text-foreground dark:text-foreground/60 dark:hover:text-foreground
+        transition-colors duration-200 ${className || ''}`}
     >
       {children}
     </button>
