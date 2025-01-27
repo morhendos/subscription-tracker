@@ -6,7 +6,7 @@ interface StoredUser extends Omit<CustomUser, 'id'> {
   password: string;
 }
 
-const USERS_STORAGE_KEY = 'journal_users';
+const USERS_STORAGE_KEY = 'st_users';
 
 function getStoredUsers(): StoredUser[] {
   if (typeof window === 'undefined') return [];
