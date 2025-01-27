@@ -3,10 +3,23 @@ import { CustomUser, UserRole } from '@/types/auth';
 
 interface StoredUser extends Omit<CustomUser, 'id'> {
   id: string;
-  password: string;
+  hashedPassword: string;
 }
 
 const USERS_STORAGE_KEY = 'st_users';
+
+function generateUserId(): string {
+  return Math.random().toString(36).substring(2, 15);
+}
+
+function hashPassword(password: string): string {
+  // In a real app, use bcrypt or similar
+  return Buffer.from(password).toString('base64');
+}
+
+function comparePasswords(plain: string, hashed: string): boolean {
+  return hashPassword(plain) === hashed;
+}
 
 function getStoredUsers(): StoredUser[] {
   if (typeof window === 'undefined') return [];
@@ -48,11 +61,11 @@ export async function authenticateUser(
       throw new AuthError('No account found with this email. Please check your email or create a new account.', 'invalid_credentials');
     }
 
-    if (user.password !== password) {
+    if (!comparePasswords(password, user.hashedPassword)) {
       throw new AuthError('Incorrect password. Please try again.', 'invalid_credentials');
     }
 
-    const { password: _, ...safeUserData } = user;
+    const { hashedPassword, ...safeUserData } = user;
     return safeUserData;
 
   } catch (error) {
@@ -75,16 +88,16 @@ export async function registerUser(
   }
 
   const newUser: StoredUser = {
-    id: Date.now().toString(),
+    id: generateUserId(),
     email,
-    password,
     name: name || email.split('@')[0],
+    hashedPassword: hashPassword(password),
     roles: [{ id: '1', name: 'user' }],
   };
 
   users.push(newUser);
   saveUsers(users);
 
-  const { password: _, ...safeUserData } = newUser;
+  const { hashedPassword, ...safeUserData } = newUser;
   return safeUserData;
 }
