@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Save } from 'lucide-react';
 import { Subscription, SubscriptionFormData } from '@/types/subscriptions';
 import { getLocalISOString } from '@/utils/dates';
 
@@ -180,8 +180,17 @@ export function SubscriptionForm({
           type="submit"
           className="flex-1 bg-accent/10 text-accent hover:bg-accent/15 py-3 px-6 rounded-md transition-all duration-200 flex items-center justify-center gap-2 group journal-text journal-button"
         >
-          <Plus size={18} className="group-hover:scale-105 transition-transform" strokeWidth={1.5} />
-          <span>Add Subscription</span>
+          {initialData ? (
+            <>
+              <Save size={18} className="group-hover:scale-105 transition-transform" strokeWidth={1.5} />
+              <span>Save Changes</span>
+            </>
+          ) : (
+            <>
+              <Plus size={18} className="group-hover:scale-105 transition-transform" strokeWidth={1.5} />
+              <span>Add Subscription</span>
+            </>
+          )}
         </button>
       </div>
     </form>
