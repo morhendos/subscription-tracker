@@ -152,7 +152,7 @@ function LoginPageContent() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-primary/90 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <LogIn size={18} className="group-hover:scale-105 transition-transform" strokeWidth={1.5} />
                 <span>{isLoading ? 'Logging in...' : 'Log in'}</span>
@@ -160,7 +160,7 @@ function LoginPageContent() {
 
               <p className="text-sm text-center text-muted-foreground">
                 Don&apos;t have an account?{' '}
-                <Link href="/signup" className="text-primary hover:underline">
+                <Link href="/signup" className="text-primary hover:text-primary/90 hover:underline font-medium">
                   Create one
                 </Link>
               </p>
