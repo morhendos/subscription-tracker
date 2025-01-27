@@ -10,7 +10,7 @@ export function PageHeader() {
         <div className="w-32">
           <LogoutButton />
         </div>
-        <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight">
+        <h1 className="text-4xl sm:text-5xl font-bold text-foreground dark:text-foreground tracking-tight">
           Subscription Tracker
         </h1>
         <div className="w-32">
