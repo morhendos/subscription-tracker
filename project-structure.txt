@@ -17,12 +17,20 @@ subscription-tracker/
 │   │   │       ├── [id]
 │   │   │       │   └── route.ts
 │   │   │       └── route.ts
+│   │   ├── auth
+│   │   │   ├── error
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── page.tsx
+│   │   │   └── signout
+│   │   │       └── page.tsx
 │   │   ├── globals.css
 │   │   ├── layout.tsx
 │   │   ├── login
 │   │   │   └── page.tsx
 │   │   ├── page.tsx
 │   │   ├── providers.tsx
+│   │   ├── signup
+│   │   │   └── page.tsx
 │   │   └── subscriptions
 │   │       ├── error.tsx
 │   │       ├── layout.tsx
@@ -30,6 +38,10 @@ subscription-tracker/
 │   │       └── page.tsx
 │   ├── components
 │   │   ├── ThemeToggle.tsx
+│   │   ├── auth
+│   │   │   ├── AuthLogo.tsx
+│   │   │   ├── AuthProvider.tsx
+│   │   │   └── LogoutButton.tsx
 │   │   ├── common
 │   │   │   └── Section.tsx
 │   │   ├── error-boundary.tsx
@@ -48,7 +60,10 @@ subscription-tracker/
 │   │       ├── IconButton.tsx
 │   │       ├── card.tsx
 │   │       ├── input.tsx
-│   │       └── label.tsx
+│   │       ├── label.tsx
+│   │       ├── toast.tsx
+│   │       ├── toaster.tsx
+│   │       └── use-toast.ts
 │   ├── contexts
 │   │   └── DateContext.tsx
 │   ├── hooks
