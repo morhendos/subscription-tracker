@@ -6,7 +6,7 @@ interface StoredUser extends Omit<CustomUser, 'id'> {
   hashedPassword: string;
 }
 
-const USERS_STORAGE_KEY = 'st_users';
+const USERS_STORAGE_KEY = 'journal_users';
 
 function generateUserId(): string {
   return Math.random().toString(36).substring(2, 15);
@@ -79,9 +79,9 @@ export async function authenticateUser(
 export async function registerUser(
   email: string,
   password: string,
-  usersJson?: string
+  name?: string
 ): Promise<CustomUser> {
-  let users = usersJson ? JSON.parse(usersJson) : getStoredUsers();
+  const users = getStoredUsers();
   
   // Check if user already exists
   if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
@@ -92,9 +92,9 @@ export async function registerUser(
   const newUser: StoredUser = {
     id: generateUserId(),
     email,
-    name: email.split('@')[0],
+    name: name || email.split('@')[0],
     hashedPassword: hashPassword(password),
-    roles: [],
+    roles: [{ id: '1', name: 'user' }],
   };
 
   users.push(newUser);
@@ -102,10 +102,4 @@ export async function registerUser(
 
   const { hashedPassword, ...userWithoutPassword } = newUser;
   return userWithoutPassword;
-}
-
-export async function getUserRoles(userId: string): Promise<UserRole[]> {
-  const users = getStoredUsers();
-  const user = users.find(u => u.id === userId);
-  return user?.roles || [];
 }
