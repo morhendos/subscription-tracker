@@ -3,6 +3,10 @@
 import { Download, Upload, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useCallback } from 'react';
+import { useSession } from 'next-auth/react';
+import { useToast } from '@/components/ui/use-toast';
+
+const BASE_STORAGE_KEY = 'subscriptions';
 
 function Controls({
   theme,
@@ -77,7 +81,7 @@ function HeaderButton({
     <button
       {...props}
       className="w-10 h-10 rounded-full flex items-center justify-center
-        text-ink/70 hover:text-ink transition-colors duration-200"
+        text-foreground/70 hover:text-foreground dark:text-foreground/60 dark:hover:text-foreground transition-colors duration-200"
     >
       {children}
     </button>
@@ -86,7 +90,14 @@ function HeaderButton({
 
 export function HeaderControls() {
   const { theme, toggleTheme, mounted } = useTheme();
+  const { data: session } = useSession();
+  const { toast } = useToast();
   
+  const getStorageKey = () => {
+    if (!session?.user?.id) return null;
+    return `${BASE_STORAGE_KEY}_${session.user.id}`;
+  };
+
   return (
     <Controls
       theme={theme}
@@ -94,20 +105,72 @@ export function HeaderControls() {
       toggleTheme={toggleTheme}
       storageActions={{
         importData: async (data) => {
-          localStorage.setItem('subscriptions', JSON.stringify(data));
-          window.location.reload();
+          const storageKey = getStorageKey();
+          if (!storageKey) {
+            toast({
+              title: "Error",
+              description: "You must be logged in to import data",
+              variant: "destructive"
+            });
+            return;
+          }
+
+          try {
+            // Validate the imported data structure
+            if (!Array.isArray(data)) {
+              throw new Error('Invalid data format: expected an array');
+            }
+
+            localStorage.setItem(storageKey, JSON.stringify(data));
+            window.location.reload();
+            toast({
+              title: "Success",
+              description: "Subscriptions imported successfully"
+            });
+          } catch (error) {
+            console.error('Error importing data:', error);
+            toast({
+              title: "Error",
+              description: "Failed to import data. Please check the file format.",
+              variant: "destructive"
+            });
+          }
         },
         exportData: () => {
-          const data = localStorage.getItem('subscriptions') || '[]';
-          const blob = new Blob([data], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'subscriptions.json';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
+          const storageKey = getStorageKey();
+          if (!storageKey) {
+            toast({
+              title: "Error",
+              description: "You must be logged in to export data",
+              variant: "destructive"
+            });
+            return;
+          }
+
+          try {
+            const data = localStorage.getItem(storageKey) || '[]';
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `subscriptions_${session.user.email.split('@')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            toast({
+              title: "Success",
+              description: "Subscriptions exported successfully"
+            });
+          } catch (error) {
+            console.error('Error exporting data:', error);
+            toast({
+              title: "Error",
+              description: "Failed to export data",
+              variant: "destructive"
+            });
+          }
         }
       }}
     />
