@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Plus } from 'lucide-react';
 import { Subscription, SubscriptionFormData } from '@/types/subscriptions';
 import { getLocalISOString } from '@/utils/dates';
 
@@ -177,9 +178,10 @@ export function SubscriptionForm({
         )}
         <button
           type="submit"
-          className="w-full rounded-md bg-accent/10 p-4 transition-colors hover:bg-accent/15 flex items-center justify-center text-accent gap-2"
+          className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#1e2937] p-4 text-[#5eabff] hover:bg-[#1e2937]/90 transition-colors"
         >
-          Add Subscription
+          <Plus size={20} />
+          <span>Add Subscription</span>
         </button>
       </div>
     </form>
