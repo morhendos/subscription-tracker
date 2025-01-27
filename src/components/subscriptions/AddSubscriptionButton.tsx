@@ -10,12 +10,11 @@ export function AddSubscriptionButton({ onClick }: AddSubscriptionButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="flex-1 bg-blue-500/10 text-blue-500 hover:bg-blue-500/15
-        py-3 px-6 rounded-md transition-all duration-200
-        flex items-center justify-center gap-2 group
-        dark:text-blue-400 dark:hover:bg-blue-400/15"
+      className="w-full flex items-center justify-center gap-2 rounded-md bg-sky-400 hover:bg-sky-500 
+        py-3 px-6 text-white font-medium transition-colors duration-200
+        dark:bg-sky-600 dark:hover:bg-sky-700"
     >
-      <Plus size={18} className="group-hover:scale-105 transition-transform" strokeWidth={1.5} />
+      <Plus size={18} strokeWidth={1.5} />
       Add Subscription
     </button>
   );
