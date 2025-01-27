@@ -15,7 +15,7 @@ interface FormErrors {
   general?: string
 }
 
-const USERS_STORAGE_KEY = 'st_users';
+const USERS_STORAGE_KEY = 'journal_users';
 
 function ErrorAlert({ message }: { message: string }) {
   return (
