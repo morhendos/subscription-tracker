@@ -6,7 +6,7 @@ interface StoredUser extends Omit<CustomUser, 'id'> {
   hashedPassword: string;
 }
 
-const USERS_JSON = process.env.USERS_JSON || '[]';
+const USERS_STORAGE_KEY = 'st_users';
 
 function generateUserId(): string {
   return Math.random().toString(36).substring(2, 15);
@@ -21,16 +21,23 @@ function comparePasswords(plain: string, hashed: string): boolean {
   return hashPassword(plain) === hashed;
 }
 
-function parseUsers(usersJson: string): StoredUser[] {
+function getStoredUsers(): StoredUser[] {
+  if (typeof window === 'undefined') return [];
   try {
-    const users = JSON.parse(usersJson || USERS_JSON);
-    if (!Array.isArray(users)) {
-      throw new Error('Users data must be an array');
-    }
-    return users;
+    const usersJson = localStorage.getItem(USERS_STORAGE_KEY);
+    return usersJson ? JSON.parse(usersJson) : [];
   } catch (error) {
-    console.error('Error parsing users:', error);
+    console.error('Error reading users from storage:', error);
     return [];
+  }
+}
+
+function saveUsers(users: StoredUser[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  } catch (error) {
+    console.error('Error saving users to storage:', error);
   }
 }
 
@@ -39,20 +46,34 @@ export async function authenticateUser(
   password: string,
   usersJson?: string
 ): Promise<CustomUser> {
-  const users = parseUsers(usersJson || '');
-  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  let users: StoredUser[] = [];
 
-  if (!user) {
-    throw new AuthError('User not found', 'invalid_credentials');
+  try {
+    if (usersJson) {
+      users = JSON.parse(usersJson);
+    } else {
+      users = getStoredUsers();
+    }
+
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!user) {
+      throw new AuthError('No account found with this email. Please check your email or create a new account.', 'invalid_credentials');
+    }
+
+    // Verify password
+    if (!comparePasswords(password, user.hashedPassword)) {
+      throw new AuthError('Incorrect password. Please try again.', 'invalid_credentials');
+    }
+
+    const { hashedPassword, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  } catch (error) {
+    if (error instanceof AuthError) {
+      throw error;
+    }
+    throw new AuthError('Something went wrong. Please try again.', 'invalid_credentials');
   }
-
-  // Verify password
-  if (!comparePasswords(password, user.hashedPassword)) {
-    throw new AuthError('Invalid password', 'invalid_credentials');
-  }
-
-  const { hashedPassword, ...userWithoutPassword } = user;
-  return userWithoutPassword;
 }
 
 export async function registerUser(
@@ -60,11 +81,11 @@ export async function registerUser(
   password: string,
   usersJson?: string
 ): Promise<CustomUser> {
-  const users = parseUsers(usersJson || '');
+  let users = usersJson ? JSON.parse(usersJson) : getStoredUsers();
   
   // Check if user already exists
   if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-    throw new AuthError('Email already in use', 'email_exists');
+    throw new AuthError('This email is already registered. Please use a different email or log in.', 'email_exists');
   }
 
   // Create new user
@@ -77,16 +98,14 @@ export async function registerUser(
   };
 
   users.push(newUser);
-
-  // In a real app, save to database
-  console.log('Created new user:', { id: newUser.id, email: newUser.email });
+  saveUsers(users);
 
   const { hashedPassword, ...userWithoutPassword } = newUser;
   return userWithoutPassword;
 }
 
 export async function getUserRoles(userId: string): Promise<UserRole[]> {
-  const users = parseUsers('');
+  const users = getStoredUsers();
   const user = users.find(u => u.id === userId);
   return user?.roles || [];
 }
