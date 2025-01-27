@@ -10,10 +10,10 @@ export function AddSubscriptionButton({ onClick }: AddSubscriptionButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="p-2 rounded-lg hover:bg-accent/10 text-ink/50 hover:text-accent transition-colors"
-      aria-label="Add subscription"
+      className="w-full rounded-md bg-accent/10 p-4 transition-colors hover:bg-accent/15 flex items-center justify-center text-accent gap-2"
     >
-      <Plus size={20} />
+      <Plus size={20} strokeWidth={1.5} />
+      <span>Add Subscription</span>
     </button>
   );
 }
