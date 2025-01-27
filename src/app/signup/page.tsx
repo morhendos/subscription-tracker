@@ -169,7 +169,7 @@ export default function SignUpPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-700"
               >
                 <UserPlus size={18} className="group-hover:scale-105 transition-transform" strokeWidth={1.5} />
                 <span>{isLoading ? 'Creating account...' : 'Create account'}</span>
@@ -177,7 +177,7 @@ export default function SignUpPage() {
 
               <p className="text-sm text-center text-muted-foreground">
                 Already have an account?{' '}
-                <Link href="/login" className="text-primary hover:underline">
+                <Link href="/login" className="text-blue-500 hover:text-blue-400 hover:underline font-medium dark:text-blue-400 dark:hover:text-blue-300">
                   Log in
                 </Link>
               </p>
