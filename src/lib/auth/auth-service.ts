@@ -43,22 +43,7 @@ export async function authenticateUser(
   const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
   if (!user) {
-    // Create new user
-    const newUser: StoredUser = {
-      id: generateUserId(),
-      email,
-      name: email.split('@')[0],
-      hashedPassword: hashPassword(password),
-      roles: [],
-    };
-
-    users.push(newUser);
-
-    // In a real app, save to database
-    console.log('Created new user:', { id: newUser.id, email: newUser.email });
-
-    const { hashedPassword, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
+    throw new AuthError('User not found', 'invalid_credentials');
   }
 
   // Verify password
@@ -67,6 +52,36 @@ export async function authenticateUser(
   }
 
   const { hashedPassword, ...userWithoutPassword } = user;
+  return userWithoutPassword;
+}
+
+export async function registerUser(
+  email: string,
+  password: string,
+  usersJson?: string
+): Promise<CustomUser> {
+  const users = parseUsers(usersJson || '');
+  
+  // Check if user already exists
+  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    throw new AuthError('Email already in use', 'email_exists');
+  }
+
+  // Create new user
+  const newUser: StoredUser = {
+    id: generateUserId(),
+    email,
+    name: email.split('@')[0],
+    hashedPassword: hashPassword(password),
+    roles: [],
+  };
+
+  users.push(newUser);
+
+  // In a real app, save to database
+  console.log('Created new user:', { id: newUser.id, email: newUser.email });
+
+  const { hashedPassword, ...userWithoutPassword } = newUser;
   return userWithoutPassword;
 }
 
