@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Subscription, SubscriptionFormData, SubscriptionSummary, Currency } from '@/types/subscriptions';
 import { convertToEur } from '@/utils/format';
+import { useSession } from 'next-auth/react';
 
-const STORAGE_KEY = 'subscriptions';
+const BASE_STORAGE_KEY = 'subscriptions';
 
 /**
  * Custom hook for managing subscription data with persistence
@@ -17,23 +18,39 @@ const STORAGE_KEY = 'subscriptions';
  * @property {boolean} mounted - Component mount status
  */
 export function useSubscriptionStorage() {
+  const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
 
+  // Get storage key for current user
+  const getStorageKey = () => {
+    if (!session?.user?.id) return null;
+    return `${BASE_STORAGE_KEY}_${session.user.id}`;
+  };
+
   useEffect(() => {
     setMounted(true);
+    const storageKey = getStorageKey();
+    if (!storageKey) return;
+
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         setSubscriptions(parsed);
+      } else {
+        // Initialize empty array for new user
+        setSubscriptions([]);
       }
     } catch (error) {
       console.error('Error loading subscriptions:', error);
     }
-  }, []);
+  }, [session?.user?.id]); // Re-run when user changes
 
-  const addSubscription = (data: SubscriptionFormData): Subscription => {
+  const addSubscription = (data: SubscriptionFormData): Subscription | null => {
+    const storageKey = getStorageKey();
+    if (!storageKey) return null;
+
     const newSubscription: Subscription = {
       ...data,
       id: Date.now().toString(),
@@ -45,13 +62,16 @@ export function useSubscriptionStorage() {
 
     setSubscriptions(current => {
       const newSubs = [...current, newSubscription];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSubs));
+      localStorage.setItem(storageKey, JSON.stringify(newSubs));
       return newSubs;
     });
     return newSubscription;
   };
 
   const updateSubscription = (id: string, data: Partial<SubscriptionFormData>) => {
+    const storageKey = getStorageKey();
+    if (!storageKey) return;
+
     setSubscriptions(current => {
       const updated = current.map(sub => {
         if (sub.id !== id) return sub;
@@ -75,39 +95,48 @@ export function useSubscriptionStorage() {
         return updatedSub;
       });
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      localStorage.setItem(storageKey, JSON.stringify(updated));
       return updated;
     });
   };
 
   const toggleSubscription = (id: string) => {
+    const storageKey = getStorageKey();
+    if (!storageKey) return;
+
     setSubscriptions(current => {
       const updated = current.map(sub =>
         sub.id === id
           ? { ...sub, disabled: !sub.disabled, updatedAt: new Date().toISOString() }
           : sub
       );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      localStorage.setItem(storageKey, JSON.stringify(updated));
       return updated;
     });
   };
 
   const toggleAllSubscriptions = (enabled: boolean) => {
+    const storageKey = getStorageKey();
+    if (!storageKey) return;
+
     setSubscriptions(current => {
       const updated = current.map(sub => ({
         ...sub,
         disabled: !enabled,
         updatedAt: new Date().toISOString()
       }));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      localStorage.setItem(storageKey, JSON.stringify(updated));
       return updated;
     });
   };
 
   const deleteSubscription = (id: string) => {
+    const storageKey = getStorageKey();
+    if (!storageKey) return;
+
     setSubscriptions(current => {
       const filtered = current.filter(sub => sub.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+      localStorage.setItem(storageKey, JSON.stringify(filtered));
       return filtered;
     });
   };
