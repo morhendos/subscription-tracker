@@ -3,23 +3,10 @@ import { CustomUser, UserRole } from '@/types/auth';
 
 interface StoredUser extends Omit<CustomUser, 'id'> {
   id: string;
-  hashedPassword: string;
+  password: string;
 }
 
 const USERS_STORAGE_KEY = 'journal_users';
-
-function generateUserId(): string {
-  return Math.random().toString(36).substring(2, 15);
-}
-
-function hashPassword(password: string): string {
-  // In a real app, use bcrypt or similar
-  return Buffer.from(password).toString('base64');
-}
-
-function comparePasswords(plain: string, hashed: string): boolean {
-  return hashPassword(plain) === hashed;
-}
 
 function getStoredUsers(): StoredUser[] {
   if (typeof window === 'undefined') return [];
@@ -56,18 +43,18 @@ export async function authenticateUser(
     }
 
     const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-
+    
     if (!user) {
       throw new AuthError('No account found with this email. Please check your email or create a new account.', 'invalid_credentials');
     }
 
-    // Verify password
-    if (!comparePasswords(password, user.hashedPassword)) {
+    if (user.password !== password) {
       throw new AuthError('Incorrect password. Please try again.', 'invalid_credentials');
     }
 
-    const { hashedPassword, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    const { password: _, ...safeUserData } = user;
+    return safeUserData;
+
   } catch (error) {
     if (error instanceof AuthError) {
       throw error;
@@ -83,23 +70,21 @@ export async function registerUser(
 ): Promise<CustomUser> {
   const users = getStoredUsers();
   
-  // Check if user already exists
-  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+  if (users.some(user => user.email.toLowerCase() === email.toLowerCase())) {
     throw new AuthError('This email is already registered. Please use a different email or log in.', 'email_exists');
   }
 
-  // Create new user
   const newUser: StoredUser = {
-    id: generateUserId(),
+    id: Date.now().toString(),
     email,
+    password,
     name: name || email.split('@')[0],
-    hashedPassword: hashPassword(password),
     roles: [{ id: '1', name: 'user' }],
   };
 
   users.push(newUser);
   saveUsers(users);
 
-  const { hashedPassword, ...userWithoutPassword } = newUser;
-  return userWithoutPassword;
+  const { password: _, ...safeUserData } = newUser;
+  return safeUserData;
 }
