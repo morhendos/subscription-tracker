@@ -7,6 +7,7 @@ import { useState, useCallback, Suspense } from 'react'
 import { validateEmail, validatePassword } from '@/lib/auth/validation'
 import { Section } from '@/components/common/Section'
 import { LogIn, AlertCircle } from 'lucide-react'
+import AuthLogo from '@/components/auth/AuthLogo'
 
 interface FormErrors {
   email?: string
@@ -18,13 +19,13 @@ const USERS_STORAGE_KEY = 'journal_users';
 
 function ErrorAlert({ message }: { message: string }) {
   return (
-    <div className="rounded-lg bg-red-50 dark:bg-red-900/10 p-4 border border-red-200 dark:border-red-800">
+    <div className="rounded-lg bg-destructive/10 p-4 border border-destructive/20">
       <div className="flex">
         <div className="flex-shrink-0">
-          <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+          <AlertCircle className="h-5 w-5 text-destructive" aria-hidden="true" />
         </div>
         <div className="ml-3">
-          <p className="text-sm text-red-800 dark:text-red-200">{message}</p>
+          <p className="text-sm text-destructive">{message}</p>
         </div>
       </div>
     </div>
@@ -103,14 +104,16 @@ function LoginPageContent() {
   }
 
   const FormError = ({ message }: { message?: string }) => (
-    message ? <p className="text-sm text-red-600 dark:text-red-400 mt-1">{message}</p> : null
+    message ? <p className="text-sm text-destructive mt-1">{message}</p> : null
   )
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-200">
       <main className="container mx-auto h-screen px-3 py-4 sm:px-4 sm:py-12 max-w-6xl relative flex items-center justify-center">
-        <Section title="Login" className="min-w-[450px]">
+        <Section title="" className="min-w-[450px]">
           <div className="w-full max-w-md mx-auto">
+            <AuthLogo />
+
             <form method="POST" onSubmit={handleSubmit} className="space-y-6">
               {errors.general && <ErrorAlert message={errors.general} />}
 
@@ -149,9 +152,7 @@ function LoginPageContent() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 bg-accent/10 text-accent hover:bg-accent/15
-                py-3 px-6 rounded-md transition-all duration-200
-                flex items-center justify-center gap-2 group journal-text journal-button w-full"
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <LogIn size={18} className="group-hover:scale-105 transition-transform" strokeWidth={1.5} />
                 <span>{isLoading ? 'Logging in...' : 'Log in'}</span>
@@ -159,7 +160,7 @@ function LoginPageContent() {
 
               <p className="text-sm text-center text-muted-foreground">
                 Don&apos;t have an account?{' '}
-                <Link href="/signup" className="text-accent hover:underline">
+                <Link href="/signup" className="text-primary hover:underline">
                   Create one
                 </Link>
               </p>
